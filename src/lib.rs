@@ -189,5 +189,4 @@ mod tests {
         assert_eq!(time.seconds, DEFAULT_SECONDS);
         assert_eq!(time.minutes, DEFAULT_MINUTES);
     }
-
 }

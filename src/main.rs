@@ -1,7 +1,7 @@
 use gloo_timers::callback::Interval;
 use yew::{html, Component, Context, Html};
 
-use emom::{Msg, Time, Timer, DEFAULT_MINUTES, DEFAULT_SECONDS, DEFAULT_ROUNDS};
+use emom::{Msg, Time, Timer, DEFAULT_MINUTES, DEFAULT_ROUNDS, DEFAULT_SECONDS};
 
 pub struct App {
     round_time: Time,
@@ -33,7 +33,7 @@ impl Component for App {
             seconds: DEFAULT_SECONDS,
             minutes: DEFAULT_MINUTES,
         };
-        
+
         Self {
             round_time: time,
             timer: Timer {

@@ -57,7 +57,7 @@ impl Time {
 }
 
 pub struct Timer {
-    pub time: Time,
+    pub current_time: Time,
     pub rounds: u32,
     pub current_round: u32,
     pub running: bool,
@@ -65,7 +65,7 @@ pub struct Timer {
 
 impl Timer {
     pub fn reset(&mut self) {
-        self.time.reset();
+        self.current_time.reset();
         self.rounds = 15;
         self.current_round = 1;
         self.running = false;
@@ -91,7 +91,7 @@ mod tests {
     #[test]
     fn test_reset() {
         let mut timer = Timer {
-            time: Time {
+            current_time: Time {
                 seconds: 30,
                 minutes: 2,
             },
@@ -100,8 +100,8 @@ mod tests {
             running: true,
         };
         timer.reset();
-        assert_eq!(timer.time.seconds, 0);
-        assert_eq!(timer.time.minutes, 1);
+        assert_eq!(timer.current_time.seconds, 0);
+        assert_eq!(timer.current_time.minutes, 1);
         assert_eq!(timer.rounds, 15);
         assert_eq!(timer.current_round, 1);
         assert_eq!(timer.running, false);
@@ -145,7 +145,7 @@ mod tests {
     #[test]
     fn test_increment_rounds() {
         let mut timer = Timer {
-            time: Time {
+            current_time: Time {
                 seconds: 0,
                 minutes: 1,
             },
@@ -160,7 +160,7 @@ mod tests {
     #[test]
     fn test_decrement_rounds() {
         let mut timer = Timer {
-            time: Time {
+            current_time: Time {
                 seconds: 0,
                 minutes: 1,
             },

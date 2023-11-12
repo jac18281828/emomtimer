@@ -1,10 +1,10 @@
 use gloo_timers::callback::Interval;
 use yew::{html, Component, Context, Html};
 
-use emom::{Msg, Timer, Time};
+use emom::{Msg, Time, Timer};
 
 pub struct App {
-    time: Time,
+    round_time: Time,
     timer: Timer,
     interval: Option<Interval>,
 }
@@ -26,9 +26,9 @@ impl Component for App {
             minutes: 1,
         };
         Self {
-            time: time,
+            round_time: time,
             timer: Timer {
-                time: time,
+                current_time: time,
                 rounds: 15,
                 current_round: 1,
                 running: false,
@@ -51,10 +51,10 @@ impl Component for App {
                 true
             }
             Msg::Tick => {
-                self.timer.time.decrement_seconds();
-                if self.timer.time.seconds == 0 && self.timer.time.minutes == 0 {
+                self.timer.current_time.decrement_seconds();
+                if self.timer.current_time.seconds == 0 && self.timer.current_time.minutes == 0 {
                     self.timer.current_round += 1;
-                    self.timer.time = self.time;
+                    self.timer.current_time = self.round_time;
 
                     if self.timer.current_round > self.timer.rounds {
                         self.timer.current_round = 1;
@@ -64,7 +64,7 @@ impl Component for App {
                 true
             }
             Msg::Reset => {
-                self.time.reset();
+                self.round_time.reset();
                 self.timer.reset();
                 true
             }
@@ -77,23 +77,23 @@ impl Component for App {
                 true
             }
             Msg::IncrementSecond => {
-                self.time.increment_seconds();
-                self.timer.time = self.time;
+                self.round_time.increment_seconds();
+                self.timer.current_time = self.round_time;
                 true
             }
             Msg::DecrementSecond => {
-                self.time.decrement_seconds();
-                self.timer.time = self.time;
+                self.round_time.decrement_seconds();
+                self.timer.current_time = self.round_time;
                 true
             }
             Msg::IncrementMinute => {
-                self.time.increment_minutes();
-                self.timer.time = self.time;
+                self.round_time.increment_minutes();
+                self.timer.current_time = self.round_time;
                 true
             }
             Msg::DecrementMinute => {
-                self.time.decrement_minutes();
-                self.timer.time = self.time;
+                self.round_time.decrement_minutes();
+                self.timer.current_time = self.round_time;
                 true
             }
         }
@@ -122,7 +122,7 @@ impl Component for App {
             <body>
                 <div class="mainTitle" align="right"><h1>{ "EMOM Timer" }</h1></div>
                 <div class="roundsDisplay" id="roundsDisplay">{ format!("{}/{}", state.current_round, state.rounds) }</div>
-                <div class="timerDisplay" id="timerDisplay">{ format!("{}:{:02}", state.time.minutes, state.time.seconds) }</div>
+                <div class="timerDisplay" id="timerDisplay">{ format!("{}:{:02}", state.current_time.minutes, state.current_time.seconds) }</div>
                 <div id="buttonDisplay">
                 <button onclick={ start } id="startButton">{ "Start" }</button>
                 <button onclick={ stop } id="stopButton">{ "Stop" }</button>

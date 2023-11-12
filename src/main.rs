@@ -1,9 +1,10 @@
 use gloo_timers::callback::Interval;
 use yew::{html, Component, Context, Html};
 
-use emom::{Msg, Timer};
+use emom::{Msg, Timer, Time};
 
 pub struct App {
+    time: Time,
     timer: Timer,
     interval: Option<Interval>,
 }
@@ -11,6 +12,7 @@ pub struct App {
 impl App {
     fn cancel(&mut self) {
         self.interval = None;
+        self.timer.running = false;
     }
 }
 
@@ -19,10 +21,14 @@ impl Component for App {
     type Properties = ();
 
     fn create(_: &Context<Self>) -> Self {
+        let time = Time {
+            seconds: 0,
+            minutes: 1,
+        };
         Self {
+            time: time,
             timer: Timer {
-                seconds: 0,
-                minutes: 1,
+                time: time,
                 rounds: 15,
                 current_round: 1,
                 running: false,
@@ -36,7 +42,7 @@ impl Component for App {
             Msg::Start => {
                 let link = ctx.link().clone();
                 let tick_callback = move || link.send_message(Msg::Tick);
-                let handle = Interval::new(1000, tick_callback);
+                let handle = Interval::new(995, tick_callback);
                 self.interval = Some(handle);
                 true
             }
@@ -45,10 +51,20 @@ impl Component for App {
                 true
             }
             Msg::Tick => {
-                self.timer.decrement_seconds();
+                self.timer.time.decrement_seconds();
+                if self.timer.time.seconds == 0 && self.timer.time.minutes == 0 {
+                    self.timer.current_round += 1;
+                    self.timer.time = self.time;
+
+                    if self.timer.current_round > self.timer.rounds {
+                        self.timer.current_round = 1;
+                        self.cancel();
+                    }
+                }
                 true
             }
             Msg::Reset => {
+                self.time.reset();
                 self.timer.reset();
                 true
             }
@@ -61,19 +77,23 @@ impl Component for App {
                 true
             }
             Msg::IncrementSecond => {
-                self.timer.increment_seconds();
+                self.time.increment_seconds();
+                self.timer.time = self.time;
                 true
             }
             Msg::DecrementSecond => {
-                self.timer.decrement_seconds();
+                self.time.decrement_seconds();
+                self.timer.time = self.time;
                 true
             }
             Msg::IncrementMinute => {
-                self.timer.increment_minutes();
+                self.time.increment_minutes();
+                self.timer.time = self.time;
                 true
             }
             Msg::DecrementMinute => {
-                self.timer.decrement_minutes();
+                self.time.decrement_minutes();
+                self.timer.time = self.time;
                 true
             }
         }
@@ -101,8 +121,8 @@ impl Component for App {
             </head>
             <body>
                 <div class="mainTitle" align="right"><h1>{ "EMOM Timer" }</h1></div>
-                <div class="timerDisplay" id="timerDisplay">{ format!("{}:{:02}", state.minutes, state.seconds) }</div>
                 <div class="roundsDisplay" id="roundsDisplay">{ format!("{}/{}", state.current_round, state.rounds) }</div>
+                <div class="timerDisplay" id="timerDisplay">{ format!("{}:{:02}", state.time.minutes, state.time.seconds) }</div>
                 <div id="buttonDisplay">
                 <button onclick={ start } id="startButton">{ "Start" }</button>
                 <button onclick={ stop } id="stopButton">{ "Stop" }</button>
@@ -114,6 +134,7 @@ impl Component for App {
                 <button onclick={ on_add_second } id="incrementSecondButton">{ "+1" }</button>
                 <button onclick={ on_subtract_second } id="decrementSecondButton">{ "-1" }</button>
                 </div>
+                <h5><a href="https://github.com/jac18281828/emomtimer">{ "GitHub" }</a></h5>
             </body>
             </html>
         }

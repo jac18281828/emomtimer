@@ -1,6 +1,6 @@
 FROM ghcr.io/jac18281828/rustdev:latest
 
-ARG PROJECT=emom
+ARG PROJECT=emomtimer
 WORKDIR /workspaces/${PROJECT}
 COPY --chown=jac:jac . .
 ENV USER=jac

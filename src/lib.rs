@@ -11,21 +11,16 @@ pub enum Msg {
     Tick,
 }
 
-pub struct Timer {
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Time {
     pub seconds: u32,
     pub minutes: u32,
-    pub rounds: u32,
-    pub current_round: u32,
-    pub running: bool,
 }
 
-impl Timer {
+impl Time {
     pub fn reset(&mut self) {
         self.seconds = 0;
         self.minutes = 1;
-        self.rounds = 15;
-        self.current_round = 1;
-        self.running = false;
     }
 
     pub fn increment_seconds(&mut self) {
@@ -59,6 +54,22 @@ impl Timer {
             self.minutes -= 1;
         }
     }
+}
+
+pub struct Timer {
+    pub time: Time,
+    pub rounds: u32,
+    pub current_round: u32,
+    pub running: bool,
+}
+
+impl Timer {
+    pub fn reset(&mut self) {
+        self.time.reset();
+        self.rounds = 15;
+        self.current_round = 1;
+        self.running = false;
+    }
 
     pub fn increment_rounds(&mut self) {
         self.rounds += 1;
@@ -80,15 +91,17 @@ mod tests {
     #[test]
     fn test_reset() {
         let mut timer = Timer {
-            seconds: 30,
-            minutes: 2,
+            time: Time {
+                seconds: 30,
+                minutes: 2,
+            },
             rounds: 10,
             current_round: 5,
             running: true,
         };
         timer.reset();
-        assert_eq!(timer.seconds, 0);
-        assert_eq!(timer.minutes, 1);
+        assert_eq!(timer.time.seconds, 0);
+        assert_eq!(timer.time.minutes, 1);
         assert_eq!(timer.rounds, 15);
         assert_eq!(timer.current_round, 1);
         assert_eq!(timer.running, false);
@@ -96,50 +109,46 @@ mod tests {
 
     #[test]
     fn test_increment_seconds() {
-        let mut timer = Timer {
+        let mut time = Time {
             seconds: 0,
             minutes: 1,
-            rounds: 15,
-            current_round: 1,
-            running: true,
         };
-        timer.increment_seconds();
-        assert_eq!(timer.seconds, 1);
-        assert_eq!(timer.minutes, 1);
-        timer.seconds = 59;
-        timer.increment_seconds();
-        assert_eq!(timer.seconds, 0);
-        assert_eq!(timer.minutes, 2);
+        time.increment_seconds();
+        assert_eq!(time.seconds, 1);
+        assert_eq!(time.minutes, 1);
+        time.seconds = 59;
+        time.increment_seconds();
+        assert_eq!(time.seconds, 0);
+        assert_eq!(time.minutes, 2);
     }
 
     #[test]
     fn test_decrement_seconds() {
-        let mut timer = Timer {
+        let mut time = Time {
             seconds: 0,
             minutes: 0,
-            rounds: 15,
-            current_round: 1,
-            running: true,
         };
-        timer.decrement_seconds();
-        assert_eq!(timer.seconds, 0);
-        assert_eq!(timer.minutes, 0);
-        timer.seconds = 1;
-        timer.decrement_seconds();
-        assert_eq!(timer.seconds, 0);
-        assert_eq!(timer.minutes, 0);
-        timer.seconds = 0;
-        timer.minutes = 1;
-        timer.decrement_seconds();
-        assert_eq!(timer.seconds, 59);
-        assert_eq!(timer.minutes, 0);
+        time.decrement_seconds();
+        assert_eq!(time.seconds, 0);
+        assert_eq!(time.minutes, 0);
+        time.seconds = 1;
+        time.decrement_seconds();
+        assert_eq!(time.seconds, 0);
+        assert_eq!(time.minutes, 0);
+        time.seconds = 0;
+        time.minutes = 1;
+        time.decrement_seconds();
+        assert_eq!(time.seconds, 59);
+        assert_eq!(time.minutes, 0);
     }
 
     #[test]
     fn test_increment_rounds() {
         let mut timer = Timer {
-            seconds: 0,
-            minutes: 1,
+            time: Time {
+                seconds: 0,
+                minutes: 1,
+            },
             rounds: 15,
             current_round: 1,
             running: true,
@@ -151,8 +160,10 @@ mod tests {
     #[test]
     fn test_decrement_rounds() {
         let mut timer = Timer {
-            seconds: 0,
-            minutes: 1,
+            time: Time {
+                seconds: 0,
+                minutes: 1,
+            },
             rounds: 15,
             current_round: 1,
             running: true,

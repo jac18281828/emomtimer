@@ -1,7 +1,7 @@
 use gloo_timers::callback::Interval;
 use yew::{html, Component, Context, Html};
 
-use emom::{Msg, Time, Timer};
+use emom::{Msg, Time, Timer, DEFAULT_MINUTES, DEFAULT_SECONDS, DEFAULT_ROUNDS};
 
 pub struct App {
     round_time: Time,
@@ -14,6 +14,13 @@ impl App {
     fn cancel(&mut self) {
         self.interval = None;
         self.timer.running = false;
+        self.blinked = false;
+    }
+
+    fn reset(&mut self) {
+        self.round_time.reset();
+        self.timer.reset();
+        self.blinked = false;
     }
 }
 
@@ -23,14 +30,15 @@ impl Component for App {
 
     fn create(_: &Context<Self>) -> Self {
         let time = Time {
-            seconds: 0,
-            minutes: 1,
+            seconds: DEFAULT_SECONDS,
+            minutes: DEFAULT_MINUTES,
         };
+        
         Self {
             round_time: time,
             timer: Timer {
                 current_time: time,
-                rounds: 10,
+                rounds: DEFAULT_ROUNDS,
                 current_round: 1,
                 running: false,
             },
@@ -73,8 +81,7 @@ impl Component for App {
                 true
             }
             Msg::Reset => {
-                self.round_time.reset();
-                self.timer.reset();
+                self.reset();
                 true
             }
             Msg::IncrementRound => {

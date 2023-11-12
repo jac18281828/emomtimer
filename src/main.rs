@@ -6,6 +6,7 @@ use emom::{Msg, Time, Timer};
 pub struct App {
     round_time: Time,
     timer: Timer,
+    blinked: bool,
     interval: Option<Interval>,
 }
 
@@ -29,10 +30,11 @@ impl Component for App {
             round_time: time,
             timer: Timer {
                 current_time: time,
-                rounds: 15,
+                rounds: 10,
                 current_round: 1,
                 running: false,
             },
+            blinked: false,
             interval: None,
         }
     }
@@ -52,9 +54,16 @@ impl Component for App {
             }
             Msg::Tick => {
                 self.timer.current_time.decrement_seconds();
+                if self.timer.current_round > 1 {
+                    if self.round_time.seconds - self.timer.current_time.seconds < 4 {
+                        self.blinked = !self.blinked;
+                    }
+                }
+                //if self.blinked { self.blinked = false; }
                 if self.timer.current_time.seconds == 0 && self.timer.current_time.minutes == 0 {
                     self.timer.current_round += 1;
                     self.timer.current_time = self.round_time;
+                    self.blinked = !self.blinked;
 
                     if self.timer.current_round > self.timer.rounds {
                         self.timer.current_round = 1;
@@ -119,7 +128,7 @@ impl Component for App {
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             <title>{ "EMOM Timer" }</title>
             </head>
-            <body>
+            <body style={if self.blinked { "color:red" } else { "color:black" }} >
                 <div class="mainTitle" align="right"><h1>{ "EMOM Timer" }</h1></div>
                 <div class="roundsDisplay" id="roundsDisplay">{ format!("{}/{}", state.current_round, state.rounds) }</div>
                 <div class="timerDisplay" id="timerDisplay">{ format!("{}:{:02}", state.current_time.minutes, state.current_time.seconds) }</div>

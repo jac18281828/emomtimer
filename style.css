@@ -1,0 +1,22 @@
+button {
+    width:10%;
+    height:30px;
+    font-size: 18px;
+    background-color: #c4ffc6;
+    font-family: Verdana, Geneva, Tahoma, sans-serif
+}
+
+.timerDisplay {
+    font-size: 200px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif
+}
+
+.roundsDisplay {
+    font-size: 50px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif
+}
+
+.mainTitle {
+    font-size: 20px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif
+}

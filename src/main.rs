@@ -55,11 +55,13 @@ impl Component for App {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Start => {
-                info!("starting");
-                let link = ctx.link().clone();
-                let tick_callback = move || link.send_message(Msg::Tick);
-                let handle = Interval::new(98, tick_callback);
-                self.interval = Some(handle);
+                if self.interval.is_none() {
+                    info!("starting");
+                    let link = ctx.link().clone();
+                    let tick_callback = move || link.send_message(Msg::Tick);
+                    let handle = Interval::new(98, tick_callback);
+                    self.interval = Some(handle);
+                }
                 true
             }
             Msg::Stop => {
@@ -160,15 +162,15 @@ impl Component for App {
                 <div class="roundsDisplay" id="roundsDisplay">{ format!("{}/{}", state.current_round, state.rounds) }</div>
                 <div class="timerDisplay" id="timerDisplay">{ format!("{}:{:02}.{}", state.current_time.minutes, state.current_time.seconds, state.current_time.tenths) }</div>
                 <div id="buttonDisplay">
-                <button onclick={ start } id="startButton">{ "Start" }</button>
-                <button onclick={ stop } id="stopButton">{ "Stop" }</button>
-                <button onclick={ reset } id="resetButton">{ "Reset" }</button>
-                <button onclick={ on_add_round } id="incrementRoundButton">{ "+Round" }</button>
-                <button onclick={ on_subtract_round } id="decrementRoundButton">{ "-Round" }</button>
-                <button onclick={ on_add_minute } id="incrementMinuteButton">{ "+1:00" }</button>
-                <button onclick={ on_subtract_minute } id="decrementMinuteButton">{ "-1:00" }</button>
-                <button onclick={ on_add_second } id="incrementSecondButton">{ "+1" }</button>
-                <button onclick={ on_subtract_second } id="decrementSecondButton">{ "-1" }</button>
+                <button aria-label="Start" onclick={ start } id="startButton">{ "Start" }</button>
+                <button aria-label="Stop" onclick={ stop } id="stopButton">{ "Stop" }</button>
+                <button aria-label="Reset" onclick={ reset } id="resetButton">{ "Reset" }</button>
+                <button aria-label="Increment Round" onclick={ on_add_round } id="incrementRoundButton">{ "+Round" }</button>
+                <button aria-label="Decrement Round" onclick={ on_subtract_round } id="decrementRoundButton">{ "-Round" }</button>
+                <button aria-label="Increment Minute" onclick={ on_add_minute } id="incrementMinuteButton">{ "+1:00" }</button>
+                <button aria-label="Decrement Minute" onclick={ on_subtract_minute } id="decrementMinuteButton">{ "-1:00" }</button>
+                <button aria-label="Increment Second" onclick={ on_add_second } id="incrementSecondButton">{ "+1" }</button>
+                <button aria-label="Decrement Second" onclick={ on_subtract_second } id="decrementSecondButton">{ "-1" }</button>
                 </div>
                 <h5><a href="https://github.com/jac18281828/emomtimer">{ "GitHub" }</a></h5>
             </body>

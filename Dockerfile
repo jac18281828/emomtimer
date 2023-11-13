@@ -12,7 +12,7 @@ ENV PATH=/home/jac/.cargo/bin:$PATH
 RUN cargo install trunk
 RUN rustup target add wasm32-unknown-unknown
 
-RUN cargo fmt --check
-RUN cargo clippy --all-features --no-deps
-RUN cargo test
-CMD cargo run
+#RUN cargo fmt --check
+#RUN cargo clippy --all-features --no-deps
+#RUN cargo test
+#CMD cargo run

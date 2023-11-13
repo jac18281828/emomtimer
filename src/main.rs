@@ -1,7 +1,8 @@
 use gloo_timers::callback::Interval;
+use log::{info, warn};
 use yew::{html, Component, Context, Html};
 
-use emom::{Msg, Time, Timer, DEFAULT_MINUTES, DEFAULT_ROUNDS, DEFAULT_SECONDS};
+use emom::emomtimer::{Msg, Time, Timer, DEFAULT_MINUTES, DEFAULT_ROUNDS, DEFAULT_SECONDS};
 
 pub struct App {
     round_time: Time,
@@ -12,7 +13,10 @@ pub struct App {
 
 impl App {
     fn cancel(&mut self) {
-        self.interval = None;
+        let intval = self.interval.take();
+        if intval.is_some() {
+            intval.unwrap().cancel();
+        }
         self.timer.running = false;
         self.blinked = false;
     }
@@ -32,6 +36,7 @@ impl Component for App {
         let time = Time {
             seconds: DEFAULT_SECONDS,
             minutes: DEFAULT_MINUTES,
+            tenths: 0,
         };
 
         Self {
@@ -50,64 +55,79 @@ impl Component for App {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Start => {
+                info!("starting");
                 let link = ctx.link().clone();
                 let tick_callback = move || link.send_message(Msg::Tick);
-                let handle = Interval::new(995, tick_callback);
+                let handle = Interval::new(98, tick_callback);
                 self.interval = Some(handle);
                 true
             }
             Msg::Stop => {
+                info!("stopping");
                 self.cancel();
                 true
             }
             Msg::Tick => {
-                self.timer.current_time.decrement_seconds();
-                if self.timer.current_round > 1 {
-                    if self.round_time.seconds - self.timer.current_time.seconds < 4 {
-                        self.blinked = !self.blinked;
-                    }
-                }
-                //if self.blinked { self.blinked = false; }
-                if self.timer.current_time.seconds == 0 && self.timer.current_time.minutes == 0 {
+                self.timer.current_time.tick();
+                let max_seconds = if self.round_time.seconds == 0 {
+                    60
+                } else {
+                    self.round_time.seconds
+                };
+                if self.timer.current_time.is_zero() {
+                    info!("end of round");
                     self.timer.current_round += 1;
-                    self.timer.current_time = self.round_time;
+                    self.timer.current_time = self.round_time.clone();
                     self.blinked = !self.blinked;
 
                     if self.timer.current_round > self.timer.rounds {
+                        info!("end of timer");
                         self.timer.current_round = 1;
                         self.cancel();
                     }
+                } else if self.timer.current_round > 1
+                    && max_seconds - self.timer.current_time.seconds < 4
+                    && self.timer.current_time.tenths == 0
+                {
+                    self.blinked = !self.blinked;
                 }
                 true
             }
             Msg::Reset => {
+                warn!("resetting");
                 self.reset();
                 true
             }
             Msg::IncrementRound => {
+                info!("incrementing rounds");
                 self.timer.increment_rounds();
                 true
             }
             Msg::DecrementRound => {
+                info!("decrementing rounds");
                 self.timer.decrement_rounds();
                 true
             }
             Msg::IncrementSecond => {
+                info!("incrementing seconds");
                 self.round_time.increment_seconds();
                 self.timer.current_time = self.round_time;
                 true
             }
             Msg::DecrementSecond => {
+                info!("decrementing seconds");
                 self.round_time.decrement_seconds();
                 self.timer.current_time = self.round_time;
                 true
             }
             Msg::IncrementMinute => {
+                info!("incrementing minutes");
                 self.round_time.increment_minutes();
                 self.timer.current_time = self.round_time;
                 true
             }
             Msg::DecrementMinute => {
+                info!("decrementing minutes");
                 self.round_time.decrement_minutes();
                 self.timer.current_time = self.round_time;
                 true
@@ -138,7 +158,7 @@ impl Component for App {
             <body style={if self.blinked { "color:red" } else { "color:black" }} >
                 <div class="mainTitle" align="right"><h1>{ "EMOM Timer" }</h1></div>
                 <div class="roundsDisplay" id="roundsDisplay">{ format!("{}/{}", state.current_round, state.rounds) }</div>
-                <div class="timerDisplay" id="timerDisplay">{ format!("{}:{:02}", state.current_time.minutes, state.current_time.seconds) }</div>
+                <div class="timerDisplay" id="timerDisplay">{ format!("{}:{:02}.{}", state.current_time.minutes, state.current_time.seconds, state.current_time.tenths) }</div>
                 <div id="buttonDisplay">
                 <button onclick={ start } id="startButton">{ "Start" }</button>
                 <button onclick={ stop } id="stopButton">{ "Stop" }</button>
@@ -158,5 +178,7 @@ impl Component for App {
 }
 
 fn main() {
+    wasm_logger::init(wasm_logger::Config::default());
+    info!("Starting up");
     yew::Renderer::<App>::new().render();
 }

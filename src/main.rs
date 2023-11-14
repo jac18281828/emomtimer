@@ -13,9 +13,8 @@ pub struct App {
 
 impl App {
     fn cancel(&mut self) {
-        let intval = self.interval.take();
-        if intval.is_some() {
-            intval.unwrap().cancel();
+        if let Some(intr_val) = self.interval.take() {
+            intr_val.cancel();
         }
         self.timer.running = false;
         self.blinked = false;
@@ -79,7 +78,7 @@ impl Component for App {
                 if self.timer.current_time.is_zero() {
                     info!("end of round");
                     self.timer.current_round += 1;
-                    self.timer.current_time = self.round_time.clone();
+                    self.timer.current_time = self.round_time;
                     self.blinked = !self.blinked;
 
                     if self.timer.current_round > self.timer.rounds {

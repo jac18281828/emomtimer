@@ -41,6 +41,7 @@ jobs:
             ${{ github.event.repository.name }}:latest
       - name: Copy artifact to _site
         run: |
+          docker container ls -l
           CONTAINER=$(docker container ls -l | tail -1 | awk '{print $1}' -)
           docker cp ${CONTAINER}:/workspaces/emomtimer/dist/ ./_site/
       - name: Upload artifact

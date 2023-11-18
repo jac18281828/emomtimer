@@ -41,8 +41,8 @@ jobs:
             ${{ github.event.repository.name }}:latest
       - name: Copy artifact to _site
         run: |
-          docker container ls -l
-          CONTAINER=$(docker container ls -l | tail -1 | awk '{print $1}' -)
+          docker container ls -l | grep ${{ github.event.repository.name }}:${{ github.sha }}
+          CONTAINER=$(docker container ls -l | grep ${{ github.event.repository.name }}:${{ github.sha }} | tail -1 | awk '{print $1}' -)
           docker cp ${CONTAINER}:/workspaces/emomtimer/dist/ ./_site/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1

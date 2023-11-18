@@ -17,4 +17,4 @@ COPY --chown=jac:jac . .
 RUN cargo fmt --check
 RUN cargo clippy --all-features --no-deps
 RUN cargo test
-CMD cargo run
+RUN trunk build --release

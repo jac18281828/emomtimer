@@ -37,7 +37,7 @@ jobs:
       - name: Build and copy artifact to _site
         run: |
           docker build . --file Dockerfile --tag ${{ github.event.repository.name }}:${{ env.TAG_SHA }}
-          docker container ls -l | grep ${{ github.event.repository.name }}:${{ env.TAG_SHA }}
+          docker container ls | grep ${{ github.event.repository.name }}:${{ env.TAG_SHA }}
           CONTAINER=$(docker container ls -l | grep ${{ github.event.repository.name }}:${{ env.TAG_SHA }} | tail -1 | awk '{print $1}' -)
           docker cp ${CONTAINER}:/workspaces/emomtimer/dist/ ./_site/
       - name: Upload artifact

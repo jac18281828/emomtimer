@@ -34,6 +34,14 @@ jobs:
           toolchain: stable
           profile: minimal
 
+      - name: Install trunk and wasm
+        run: |
+          rustup toolchain install stable 
+          rustup component add rustfmt
+          rustup component add clippy
+          cargo install trunk
+          rustup target add wasm32-unknown-unknown
+
       - name: Rust Build and Check
         run: |
           cargo check

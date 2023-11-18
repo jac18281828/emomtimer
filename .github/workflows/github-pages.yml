@@ -28,18 +28,21 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v2
       - uses: actions/setup-python@v2
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Generate repository name
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+
+      - name: Rust Build and Check
         run: |
-          echo "TAG_SHA=$( echo ${GITHUB_SHA} | cut -c 1-8 )" >> ${GITHUB_ENV}        
-      - name: Build and copy artifact to _site
-        run: |
-          docker build . --file Dockerfile --tag ${{ github.event.repository.name }}:${{ env.TAG_SHA }}
-          docker container ls | grep ${{ github.event.repository.name }}:${{ env.TAG_SHA }}
-          CONTAINER=$(docker container ls -l | grep ${{ github.event.repository.name }}:${{ env.TAG_SHA }} | tail -1 | awk '{print $1}' -)
-          docker cp ${CONTAINER}:/workspaces/emomtimer/dist/ ./_site/
+          cargo check
+          cargo fmt --check
+          cargo clippy --all-features --no-deps
+          cargo test
+          trunk build --release
+          cp -rv ./dist ./_site
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
 

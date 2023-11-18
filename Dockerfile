@@ -14,6 +14,7 @@ RUN rustup target add wasm32-unknown-unknown
 
 COPY --chown=jac:jac . .
 
+RUN cargo check
 RUN cargo fmt --check
 RUN cargo clippy --all-features --no-deps
 RUN cargo test

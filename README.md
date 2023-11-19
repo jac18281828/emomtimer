@@ -1,6 +1,12 @@
 # EMOM Timer
 
+[![EMOM Timer](timer.png)](https://jac18281828.github.io/emomtimer/)
+
+# Customizable timer for your workout!
+
 This is a customizable timer written with Rust and Yew.   
+
+# Introduction
 
 Yew is a modern Rust framework for creating multi-threaded front-end web apps using WebAssembly. It's comparable to JavaScript frameworks like React or Vue.js, but with the performance and safety benefits of Rust. Here are the key aspects of Yew:
 

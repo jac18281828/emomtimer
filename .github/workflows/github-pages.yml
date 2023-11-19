@@ -48,7 +48,7 @@ jobs:
           cargo fmt --check
           cargo clippy --all-features --no-deps
           cargo test
-          trunk build --release
+          trunk build --release --public-url ${{ github.event.repository.name }}
           cp -rv ./dist ./_site
 
       - name: Upload artifact

@@ -18,5 +18,6 @@ RUN cargo check
 RUN cargo fmt --check
 RUN cargo clippy --all-features --no-deps
 RUN cargo test
-RUN trunk build --release
+
+CMD trunk build --release
 

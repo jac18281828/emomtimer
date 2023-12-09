@@ -1,3 +1,10 @@
+# 1.0.4 (2023-12-09)
+
+* cleanup and refactor
+* fixing increment and decrement operations
+* cleanup around blink
+
+
 # 1.0.3 (2023-11-19)
 
 * fix deployment url

@@ -12,15 +12,15 @@ pub mod emomtimer {
         Tick,
     }
 
-    pub const DEFAULT_MINUTES: u32 = 1;
-    pub const DEFAULT_SECONDS: u32 = 0;
-    pub const DEFAULT_ROUNDS: u32 = 10;
+    pub const DEFAULT_MINUTES: usize = 1;
+    pub const DEFAULT_SECONDS: usize = 0;
+    pub const DEFAULT_ROUNDS: usize = 10;
 
     #[derive(Debug, Clone, Copy, PartialEq)]
     pub struct Time {
-        pub seconds: u32,
-        pub minutes: u32,
-        pub tenths: u32,
+        pub seconds: usize,
+        pub minutes: usize,
+        pub tenths: usize,
     }
 
     impl Time {
@@ -34,7 +34,7 @@ pub mod emomtimer {
             self.seconds == 0 && self.minutes == 0 && self.tenths == 0
         }
 
-        pub fn tick(&mut self, max_seconds: u32) {
+        pub fn tick(&mut self, max_seconds: usize) {
             if self.is_zero() {
                 return;
             }
@@ -54,7 +54,7 @@ pub mod emomtimer {
             }
         }
 
-        pub fn decrement_seconds(&mut self, max_seconds: u32) {
+        pub fn decrement_seconds(&mut self, max_seconds: usize) {
             if self.is_zero() {
                 self.seconds = 0;
                 self.minutes = 0;
@@ -101,8 +101,8 @@ pub mod emomtimer {
 
     pub struct Timer {
         pub current_time: Time,
-        pub rounds: u32,
-        pub current_round: u32,
+        pub rounds: usize,
+        pub current_round: usize,
         pub running: bool,
     }
 

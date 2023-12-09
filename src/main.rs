@@ -1,5 +1,5 @@
 use gloo_timers::callback::Interval;
-use log::info;
+use log::{debug, info};
 use yew::{html, Component, Context, Html};
 
 use emom::emomtimer::{Msg, Time, Timer, DEFAULT_MINUTES, DEFAULT_ROUNDS, DEFAULT_SECONDS};
@@ -40,7 +40,7 @@ impl App {
     }
 
     fn tick(&mut self) {
-        info!("ticking");
+        debug!("ticking");
         self.timer.current_time.tick(self.max_seconds());
         if self.timer.current_time.is_zero() {
             info!("end of round");
@@ -58,7 +58,7 @@ impl App {
         }
     }
 
-    fn max_seconds(&self) -> u32 {
+    fn max_seconds(&self) -> usize {
         if self.round_time.seconds == 0 {
             60
         } else {
@@ -220,5 +220,6 @@ impl Component for App {
 fn main() {
     wasm_logger::init(wasm_logger::Config::default());
     info!("Starting up");
+    info!("usize: {:?}", std::mem::size_of::<usize>());
     yew::Renderer::<App>::new().render();
 }

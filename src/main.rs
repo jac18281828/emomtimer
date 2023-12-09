@@ -1,5 +1,5 @@
 use gloo_timers::callback::Interval;
-use log::{info, warn};
+use log::info;
 use yew::{html, Component, Context, Html};
 
 use emom::emomtimer::{Msg, Time, Timer, DEFAULT_MINUTES, DEFAULT_ROUNDS, DEFAULT_SECONDS};
@@ -24,6 +24,46 @@ impl App {
         self.round_time.reset();
         self.timer.reset();
         self.blinked = false;
+    }
+
+    fn start(&mut self, ctx: &Context<Self>) {
+        info!("starting");
+        let link = ctx.link().clone();
+        let tick_callback = move || link.send_message(Msg::Tick);
+        let handle = Interval::new(98, tick_callback);
+        self.interval = Some(handle);
+    }
+
+    fn stop(&mut self) {
+        info!("stopping");
+        self.cancel();
+    }
+
+    fn tick(&mut self) {
+        info!("ticking");
+        self.timer.current_time.tick();
+        let max_seconds = if self.round_time.seconds == 0 {
+            60
+        } else {
+            self.round_time.seconds
+        };
+        if self.timer.current_time.is_zero() {
+            info!("end of round");
+            self.timer.current_round += 1;
+            self.timer.current_time = self.round_time;
+            self.blinked = !self.blinked;
+
+            if self.timer.current_round > self.timer.rounds {
+                info!("end of timer");
+                self.timer.current_round = 1;
+                self.cancel();
+            }
+        } else if self.timer.current_round > 1
+            && emom::emomtimer::distance::<_>(max_seconds, self.timer.current_time.seconds) < 4
+            && self.timer.current_time.tenths == 0
+        {
+            self.blinked = !self.blinked;
+        }
     }
 }
 
@@ -55,47 +95,19 @@ impl Component for App {
         match msg {
             Msg::Start => {
                 if self.interval.is_none() {
-                    info!("starting");
-                    let link = ctx.link().clone();
-                    let tick_callback = move || link.send_message(Msg::Tick);
-                    let handle = Interval::new(98, tick_callback);
-                    self.interval = Some(handle);
+                    self.start(ctx);
                 }
                 true
             }
             Msg::Stop => {
-                info!("stopping");
-                self.cancel();
+                self.stop();
                 true
             }
             Msg::Tick => {
-                self.timer.current_time.tick();
-                let max_seconds = if self.round_time.seconds == 0 {
-                    60
-                } else {
-                    self.round_time.seconds
-                };
-                if self.timer.current_time.is_zero() {
-                    info!("end of round");
-                    self.timer.current_round += 1;
-                    self.timer.current_time = self.round_time;
-                    self.blinked = !self.blinked;
-
-                    if self.timer.current_round > self.timer.rounds {
-                        info!("end of timer");
-                        self.timer.current_round = 1;
-                        self.cancel();
-                    }
-                } else if self.timer.current_round > 1
-                    && max_seconds - self.timer.current_time.seconds < 4
-                    && self.timer.current_time.tenths == 0
-                {
-                    self.blinked = !self.blinked;
-                }
+                self.tick();
                 true
             }
             Msg::Reset => {
-                warn!("resetting");
                 self.reset();
                 true
             }

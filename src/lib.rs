@@ -107,6 +107,17 @@ pub mod emomtimer {
         }
     }
 
+    pub fn distance<T>(a: T, b: T) -> T
+    where
+        T: std::ops::Sub<Output = T> + std::cmp::PartialOrd + Copy,
+    {
+        if a > b {
+            a - b
+        } else {
+            b - a
+        }
+    }
+
     #[cfg(test)]
     mod tests {
         use super::*;
@@ -304,6 +315,13 @@ pub mod emomtimer {
             time.minutes = 0;
             time.tenths = 1;
             assert_eq!(time.is_zero(), false);
+        }
+
+        #[test]
+        fn test_distance() {
+            assert_eq!(distance(1, 2), 1);
+            assert_eq!(distance(2, 1), 1);
+            assert_eq!(distance(1, 1), 0);
         }
     }
 }

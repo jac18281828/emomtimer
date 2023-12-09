@@ -13,7 +13,8 @@ button {
 
 .roundsDisplay {
     font-size: 50px;
-    font-family: Verdana, Geneva, Tahoma, sans-serif
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    color: #014d04;
 }
 
 .mainTitle {

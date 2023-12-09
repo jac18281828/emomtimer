@@ -41,12 +41,7 @@ impl App {
 
     fn tick(&mut self) {
         info!("ticking");
-        self.timer.current_time.tick();
-        let max_seconds = if self.round_time.seconds == 0 {
-            60
-        } else {
-            self.round_time.seconds
-        };
+        self.timer.current_time.tick(self.max_seconds());
         if self.timer.current_time.is_zero() {
             info!("end of round");
             self.timer.current_round += 1;
@@ -58,10 +53,29 @@ impl App {
                 self.timer.current_round = 1;
                 self.cancel();
             }
-        } else if self.timer.current_round > 1
-            && emom::emomtimer::distance::<_>(max_seconds, self.timer.current_time.seconds) < 4
-            && self.timer.current_time.tenths == 0
+        } else if self.timer.current_round > 1 && self.timer.current_time.tenths == 0 {
+            self.toggle_blinked();
+        }
+    }
+
+    fn max_seconds(&self) -> u32 {
+        if self.round_time.seconds == 0 {
+            60
+        } else {
+            self.round_time.seconds
+        }
+    }
+
+    fn toggle_blinked_off(&mut self) {
+        if emom::emomtimer::distance::<_>(self.max_seconds(), self.timer.current_time.seconds) > 4
+            && self.blinked
         {
+            self.blinked = false;
+        }
+    }
+
+    fn toggle_blinked(&mut self) {
+        if emom::emomtimer::distance::<_>(self.max_seconds(), self.timer.current_time.seconds) < 4 {
             self.blinked = !self.blinked;
         }
     }
@@ -124,25 +138,31 @@ impl Component for App {
             Msg::IncrementSecond => {
                 info!("incrementing seconds");
                 self.round_time.increment_seconds();
-                self.timer.current_time = self.round_time;
+                self.timer.current_time.increment_seconds();
+                self.toggle_blinked_off();
                 true
             }
             Msg::DecrementSecond => {
                 info!("decrementing seconds");
-                self.round_time.decrement_seconds();
-                self.timer.current_time = self.round_time;
+                self.round_time.decrement_seconds(self.max_seconds());
+                self.timer
+                    .current_time
+                    .decrement_seconds(self.max_seconds());
+                self.toggle_blinked_off();
                 true
             }
-            Msg::IncrementMinute => {
-                info!("incrementing minutes");
-                self.round_time.increment_minutes();
-                self.timer.current_time = self.round_time;
+            Msg::IncrementQuarter => {
+                info!("incrementing 15");
+                self.round_time.increment_quarter();
+                self.timer.current_time.increment_quarter();
+                self.toggle_blinked_off();
                 true
             }
-            Msg::DecrementMinute => {
-                info!("decrementing minutes");
-                self.round_time.decrement_minutes();
-                self.timer.current_time = self.round_time;
+            Msg::DecrementQuarter => {
+                info!("decrementing 15");
+                self.round_time.decrement_quarter();
+                self.timer.current_time.decrement_quarter();
+                self.toggle_blinked_off();
                 true
             }
         }
@@ -157,8 +177,8 @@ impl Component for App {
         let on_subtract_round = ctx.link().callback(|_| Msg::DecrementRound);
         let on_add_second = ctx.link().callback(|_| Msg::IncrementSecond);
         let on_subtract_second = ctx.link().callback(|_| Msg::DecrementSecond);
-        let on_add_minute = ctx.link().callback(|_| Msg::IncrementMinute);
-        let on_subtract_minute = ctx.link().callback(|_| Msg::DecrementMinute);
+        let on_add_quarter = ctx.link().callback(|_| Msg::IncrementQuarter);
+        let on_subtract_quarter = ctx.link().callback(|_| Msg::DecrementQuarter);
 
         html! {
             <html lang="en">
@@ -169,21 +189,28 @@ impl Component for App {
             <title>{ "EMOM Timer" }</title>
             </head>
             <body style={if self.blinked { "color:red" } else { "color:black" }} >
-                <div class="mainTitle" align="right"><h1>{ "EMOM Timer" }</h1></div>
-                <div class="roundsDisplay" id="roundsDisplay">{ format!("{}/{}", state.current_round, state.rounds) }</div>
+                <div width="100%" height="100%" id="background">
+                <div class="mainTitle" align="center"><h1>{ "EMOM Timer" }</h1></div>
+                <div class="roundsDisplay" id="roundsDisplay" style="text-align:left">
+                { format!("{}/{}", state.current_round, state.rounds) }
+                <span style="float:right;">
+                { format!("{}:{:02}", self.round_time.minutes, self.round_time.seconds) }
+                </span>
+                </div>
                 <div class="timerDisplay" id="timerDisplay">{ format!("{}:{:02}.{}", state.current_time.minutes, state.current_time.seconds, state.current_time.tenths) }</div>
                 <div id="buttonDisplay">
                 <button aria-label="Start" onclick={ start } id="startButton">{ "Start" }</button>
                 <button aria-label="Stop" onclick={ stop } id="stopButton">{ "Stop" }</button>
                 <button aria-label="Reset" onclick={ reset } id="resetButton">{ "Reset" }</button>
-                <button aria-label="Increment Round" onclick={ on_add_round } id="incrementRoundButton">{ "+Round" }</button>
                 <button aria-label="Decrement Round" onclick={ on_subtract_round } id="decrementRoundButton">{ "-Round" }</button>
-                <button aria-label="Increment Minute" onclick={ on_add_minute } id="incrementMinuteButton">{ "+1:00" }</button>
-                <button aria-label="Decrement Minute" onclick={ on_subtract_minute } id="decrementMinuteButton">{ "-1:00" }</button>
-                <button aria-label="Increment Second" onclick={ on_add_second } id="incrementSecondButton">{ "+1" }</button>
+                <button aria-label="Increment Round" onclick={ on_add_round } id="incrementRoundButton">{ "+Round" }</button>
+                <button aria-label="Decrement 15" onclick={ on_subtract_quarter } id="decrementQuarterButton">{ "-15" }</button>
+                <button aria-label="Increment 15" onclick={ on_add_quarter } id="incrementQuarterButton">{ "+15" }</button>
                 <button aria-label="Decrement Second" onclick={ on_subtract_second } id="decrementSecondButton">{ "-1" }</button>
+                <button aria-label="Increment Second" onclick={ on_add_second } id="incrementSecondButton">{ "+1" }</button>
                 </div>
                 <h5><a href="https://github.com/jac18281828/emomtimer">{ "GitHub" }</a></h5>
+                </div>
             </body>
             </html>
         }

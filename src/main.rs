@@ -220,6 +220,5 @@ impl Component for App {
 fn main() {
     wasm_logger::init(wasm_logger::Config::default());
     info!("Starting up");
-    info!("usize: {:?}", std::mem::size_of::<usize>());
     yew::Renderer::<App>::new().render();
 }

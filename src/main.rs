@@ -69,10 +69,10 @@ impl App {
 
     fn toggle_blinked_off(&mut self) {
         if emom::emomtimer::distance::<_>(
-                self.round_time.total_seconds(),
-                self.timer.current_time.total_seconds(),
-            ) >= BLINKED_COUNT
-                && self.blinked
+            self.round_time.total_seconds(),
+            self.timer.current_time.total_seconds(),
+        ) >= BLINKED_COUNT
+            && self.blinked
         {
             self.blinked = false;
         }
@@ -80,9 +80,9 @@ impl App {
 
     fn toggle_blinked(&mut self) {
         if emom::emomtimer::distance::<_>(
-                self.round_time.total_seconds(),
-                self.timer.current_time.total_seconds(),
-            ) < BLINKED_COUNT
+            self.round_time.total_seconds(),
+            self.timer.current_time.total_seconds(),
+        ) < BLINKED_COUNT
         {
             self.blinked = !self.blinked;
         }

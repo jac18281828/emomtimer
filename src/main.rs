@@ -1,5 +1,5 @@
 use gloo_timers::callback::Interval;
-use log::{debug, info};
+use log::info;
 use yew::{html, Component, Context, Html};
 
 use emom::emomtimer::{Msg, Time, Timer, DEFAULT_MINUTES, DEFAULT_ROUNDS, DEFAULT_SECONDS};
@@ -40,7 +40,6 @@ impl App {
     }
 
     fn tick(&mut self) {
-        debug!("ticking");
         self.timer.current_time.tick(self.max_seconds());
         if self.timer.current_time.is_zero() {
             info!("end of round");
@@ -59,7 +58,7 @@ impl App {
     }
 
     fn max_seconds(&self) -> usize {
-        if self.round_time.seconds == 0 {
+        if self.round_time.minutes > 0 || self.round_time.seconds == 0 {
             60
         } else {
             self.round_time.seconds
@@ -67,15 +66,24 @@ impl App {
     }
 
     fn toggle_blinked_off(&mut self) {
-        if emom::emomtimer::distance::<_>(self.max_seconds(), self.timer.current_time.seconds) > 4
-            && self.blinked
+        if self.round_time.minutes == self.timer.current_time.minutes
+            || emom::emomtimer::distance::<_>(
+                self.round_time.seconds,
+                self.timer.current_time.seconds,
+            ) > 4
+                && self.blinked
         {
             self.blinked = false;
         }
     }
 
     fn toggle_blinked(&mut self) {
-        if emom::emomtimer::distance::<_>(self.max_seconds(), self.timer.current_time.seconds) < 4 {
+        if self.round_time.minutes == self.timer.current_time.minutes
+            && emom::emomtimer::distance::<_>(
+                self.round_time.seconds,
+                self.timer.current_time.seconds,
+            ) < 4
+        {
             self.blinked = !self.blinked;
         }
     }
@@ -190,10 +198,10 @@ impl Component for App {
             </head>
             <body style={if self.blinked { "color:red" } else { "color:black" }} >
                 <div width="100%" height="100%" id="background">
-                <div class="mainTitle" align="center"><h1>{ "EMOM Timer" }</h1></div>
+                <div class="mainTitle" align="left"><h3>{ "EMOM Timer" }</h3></div>
                 <div class="roundsDisplay" id="roundsDisplay" style="text-align:left">
                 { format!("{}/{}", state.current_round, state.rounds) }
-                <span style="float:right;">
+                <span style="float:left; width:660px">
                 { format!("{}:{:02}", self.round_time.minutes, self.round_time.seconds) }
                 </span>
                 </div>

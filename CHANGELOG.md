@@ -1,3 +1,7 @@
+# 1.0.5 (2023-12-20)
+
+* cleanup minutes handling
+
 # 1.0.4 (2023-12-09)
 
 * cleanup and refactor

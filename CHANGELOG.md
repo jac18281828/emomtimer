@@ -1,3 +1,7 @@
+# 1.0.6 (2023-12-20)
+
+* blinked fixes
+
 # 1.0.5 (2023-12-20)
 
 * cleanup minutes handling

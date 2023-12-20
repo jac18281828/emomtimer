@@ -4,6 +4,8 @@ use yew::{html, Component, Context, Html};
 
 use emom::emomtimer::{Msg, Time, Timer, DEFAULT_MINUTES, DEFAULT_ROUNDS, DEFAULT_SECONDS};
 
+const BLINKED_COUNT: usize = 4;
+
 pub struct App {
     round_time: Time,
     timer: Timer,
@@ -66,11 +68,10 @@ impl App {
     }
 
     fn toggle_blinked_off(&mut self) {
-        if self.round_time.minutes == self.timer.current_time.minutes
-            || emom::emomtimer::distance::<_>(
-                self.round_time.seconds,
-                self.timer.current_time.seconds,
-            ) > 4
+        if emom::emomtimer::distance::<_>(
+                self.round_time.total_seconds(),
+                self.timer.current_time.total_seconds(),
+            ) >= BLINKED_COUNT
                 && self.blinked
         {
             self.blinked = false;
@@ -78,11 +79,10 @@ impl App {
     }
 
     fn toggle_blinked(&mut self) {
-        if self.round_time.minutes == self.timer.current_time.minutes
-            && emom::emomtimer::distance::<_>(
-                self.round_time.seconds,
-                self.timer.current_time.seconds,
-            ) < 4
+        if emom::emomtimer::distance::<_>(
+                self.round_time.total_seconds(),
+                self.timer.current_time.total_seconds(),
+            ) < BLINKED_COUNT
         {
             self.blinked = !self.blinked;
         }
@@ -136,11 +136,13 @@ impl Component for App {
             Msg::IncrementRound => {
                 info!("incrementing rounds");
                 self.timer.increment_rounds();
+                self.toggle_blinked_off();
                 true
             }
             Msg::DecrementRound => {
                 info!("decrementing rounds");
                 self.timer.decrement_rounds();
+                self.toggle_blinked_off();
                 true
             }
             Msg::IncrementSecond => {
@@ -201,7 +203,7 @@ impl Component for App {
                 <div class="mainTitle" align="left"><h3>{ "EMOM Timer" }</h3></div>
                 <div class="roundsDisplay" id="roundsDisplay" style="text-align:left">
                 { format!("{}/{}", state.current_round, state.rounds) }
-                <span style="float:left; width:660px">
+                <span style="float:left; width:650px">
                 { format!("{}:{:02}", self.round_time.minutes, self.round_time.seconds) }
                 </span>
                 </div>

@@ -97,6 +97,11 @@ pub mod emomtimer {
                 self.minutes -= 1;
             }
         }
+
+        // ignoring tenths
+        pub fn total_seconds(&self) -> usize {
+            self.seconds + self.minutes * 60
+        }
     }
 
     pub struct Timer {
@@ -389,6 +394,23 @@ pub mod emomtimer {
             assert_eq!(distance(1, 2), 1);
             assert_eq!(distance(2, 1), 1);
             assert_eq!(distance(1, 1), 0);
+        }
+
+        #[test]
+        fn test_total_seconds() {
+            let mut time = Time {
+                seconds: 0,
+                minutes: 0,
+                tenths: 0,
+            };
+            assert_eq!(time.total_seconds(), 0);
+            time.seconds = 1;
+            assert_eq!(time.total_seconds(), 1);
+            time.seconds = 0;
+            time.minutes = 1;
+            assert_eq!(time.total_seconds(), 60);
+            time.seconds = 1;
+            assert_eq!(time.total_seconds(), 61);
         }
     }
 }

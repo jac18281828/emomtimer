@@ -31,3 +31,4 @@ Yew is a modern Rust framework for creating multi-threaded front-end web apps us
 10. **Strong Type System**: Leveraging Rust’s strong type system, Yew applications benefit from compile-time error checking, which can catch errors early in the development process.
 
 Yew is particularly suited for applications where performance, reliability, and Rust's strong type system are important. However, it does require familiarity with Rust, and the ecosystem is not as mature as JavaScript's, which could be a consideration for some projects.
+

@@ -1,4 +1,4 @@
-name: Run commitlint on pull request
+name: commitlint
 on:
   workflow_dispatch:
   pull_request:

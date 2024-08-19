@@ -1,3 +1,7 @@
+# 1.0.8 (2024-08-18)
+
+* update dependencies and cleanup
+
 # 1.0.7 (2023-12-20)
 
 * blinked fixes

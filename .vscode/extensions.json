@@ -1,7 +1,6 @@
 {
     "recommendations": [
-        "rust-lang.rust-analyzer",
         "vadimcn.vscode-lldb",
-        "1yib.rust-bundle"
+        "1yib.rust-bundle",
     ]
 }

@@ -33,10 +33,11 @@ jobs:
         run: "rustup toolchain install stable \nrustup component add rustfmt\nrustup component add clippy\ncargo install trunk\nrustup target add wasm32-unknown-unknown\n"
       - name: Rust Build and Check
         run: |
-          cargo check
           cargo fmt --check
           cargo clippy --all-features --no-deps
           cargo test
+      - name: Build artifact
+        run: |
           trunk build --release --public-url ${{ github.event.repository.name }}
           cp -rv ./dist ./_site
       - name: Upload artifact

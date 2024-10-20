@@ -1,4 +1,4 @@
-name: build and sync to S3
+name: Build and Sync to S3
 on:
   push:
     tags:
@@ -10,6 +10,7 @@ concurrency:
   cancel-in-progress: true
 env:
   S3_BUCKET_NAME: "emom-timer-us-east-2-504242000181"
+  AWS_REGION: "us-east-2"
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -21,8 +22,8 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: 'us-east-2'
-      - name: Install rust
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -34,22 +35,22 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/bin
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: Install trunk and wasm
+      - name: Install Trunk and Wasm
         run: |
           rustup component add rustfmt clippy
           rustup target add wasm32-unknown-unknown
           cargo install trunk
-      - name: Rust build and check
+      - name: Rust Build and Check
         run: |
           cargo fmt --check
           cargo clippy --all-features --no-deps
           cargo test
-      - name: Build artifact
+      - name: Build Artifact
         run: |
-          trunk build --release --public-url ${{ github.event.repository.name }}
-      - name: Sync S3 bucket
+          trunk build --release --public-url http://${{ env.S3_BUCKET_NAME }}.s3-website.${{ env.AWS_REGION }}.amazonaws.com
+      - name: Sync S3 Bucket
         run: |
-          aws s3 sync ./dist s3://${S3_BUCKET_NAME} --delete
+          aws s3 sync ./dist s3://${S3_BUCKET_NAME} --delete --region ${{ env.AWS_REGION }}
       - name: GitHub Release
         uses: actions/create-release@v1.1.0
         env:

@@ -1,4 +1,4 @@
-name: Sync to S3
+name: build and sync to S3
 on:
   push:
     tags:
@@ -6,28 +6,41 @@ on:
   workflow_dispatch:
 # Allow one concurrent deployment
 concurrency:
-  group: "s3-sync"
+  group: "sync-to-s3-${{ github.ref }}"
   cancel-in-progress: true
+env:
+  S3_BUCKET_NAME: "emom-timer-us-east-2-504242000181"
+  AWS_REGION: "us-east-2"
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v3
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: 'us-east-2'
+          aws-region: ${AWS_REGION}
       - name: Install rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           profile: minimal
+      - name: Cache Cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/bin
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Install trunk and wasm
-        run: "rustup toolchain install stable \nrustup component add rustfmt\nrustup component add clippy\ncargo install trunk\nrustup target add wasm32-unknown-unknown\n"
-      - name: Rust Build and Check
+        run: |
+          rustup component add rustfmt clippy
+          rustup target add wasm32-unknown-unknown
+          cargo install trunk
+      - name: Rust build and check
         run: |
           cargo fmt --check
           cargo clippy --all-features --no-deps
@@ -35,11 +48,11 @@ jobs:
       - name: Build artifact
         run: |
           trunk build --release --public-url ${{ github.event.repository.name }}
-      - name: Sync S3 Bucket
-        run: |-
-          aws s3 sync ./dist s3://emom-timer-us-east-2-504242000181 --delete --acl public-read
+      - name: Sync S3 bucket
+        run: |
+          aws s3 sync ./dist s3://${S3_BUCKET_NAME} --delete
       - name: GitHub Release
-        uses: actions/create-release@v1
+        uses: actions/create-release@v1.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

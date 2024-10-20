@@ -1,3 +1,7 @@
+# 1.0.9 (2024-10-20)
+
+* fix deployment, pages and lint
+
 # 1.0.8 (2024-08-18)
 
 * update dependencies and cleanup

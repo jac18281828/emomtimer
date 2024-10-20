@@ -1,0 +1,40 @@
+name: Sync to S3
+on:
+  push:
+    tags:
+      - "*"
+  workflow_dispatch:
+# Allow one concurrent deployment
+concurrency:
+  group: "s3-sync"
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: 'us-east-2'
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+      - name: Install trunk and wasm
+        run: "rustup toolchain install stable \nrustup component add rustfmt\nrustup component add clippy\ncargo install trunk\nrustup target add wasm32-unknown-unknown\n"
+      - name: Rust Build and Check
+        run: |
+          cargo fmt --check
+          cargo clippy --all-features --no-deps
+          cargo test
+      - name: Build artifact
+        run: |
+          trunk build --release --public-url ${{ github.event.repository.name }}
+      - name: Sync S3 Bucket
+        run: |-
+          aws s3 sync ./dist s3://emom-timer-us-east-2-504242000181 --delete --acl public-read

@@ -1,6 +1,8 @@
 # EMOM Timer
 
-[![EMOM Timer](timer.png)](https://jac18281828.github.io/emomtimer/)
+[![Build Dev Image CI](https://github.com/jac18281828/emomtimer/actions/workflows/ci-image.yml/badge.svg)](https://github.com/jac18281828/emomtimer/actions/workflows/ci-image.yml)
+
+[![EMOM Timer](timer.png)](http://emom-timer-us-east-2-504242000181.s3-website.us-east-2.amazonaws.com)
 
 # Customizable timer for your workout!
 

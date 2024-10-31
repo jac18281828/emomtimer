@@ -1,3 +1,7 @@
+# 1.0.10 (1024-10-31)
+
+* feat: adjust viewport to be dynamic
+
 # 1.0.9 (2024-10-20)
 
 * fix deployment, pages and lint

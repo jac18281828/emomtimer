@@ -21,3 +21,4 @@ RUN cargo clippy --all-features --no-deps
 RUN cargo test
 
 CMD trunk build --release
+

@@ -193,31 +193,33 @@ impl Component for App {
         html! {
             <html lang="en">
             <head>
-            <meta charset="UTF-8" />
-            <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <title>{ "EMOM Timer" }</title>
+                <meta charset="UTF-8" />
+                <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <title>{ "EMOM Timer" }</title>
             </head>
             <body style={if self.blinked { "color:red" } else { "color:black" }} >
-                <div width="100%" height="100%" id="background">
-                <div class="mainTitle" align="left"><h3>{ "EMOM Timer" }</h3></div>
-                <div class="roundsDisplay" id="roundsDisplay" style="text-align:left">
-                { format!("{}/{}", state.current_round, state.rounds) }
-                <span style="float:left; width:650px">
-                { format!("{}:{:02}", self.round_time.minutes, self.round_time.seconds) }
-                </span>
+                <div id="background">
+                    <div class="mainTitle">
+                        <h3>{ "EMOM Timer" }</h3>
+                    </div>
+                <div class="roundsDisplay" id="roundsDisplay">
+                    <span>{ format!("{}/{}", state.current_round, state.rounds) }</span>
+                    <span class="roundTime">{ format!("{}:{:02}", self.round_time.minutes, self.round_time.seconds) }</span>
                 </div>
-                <div class="timerDisplay" id="timerDisplay">{ format!("{}:{:02}.{}", state.current_time.minutes, state.current_time.seconds, state.current_time.tenths) }</div>
+                <div class="timerDisplay" id="timerDisplay">
+                    { format!("{}:{:02}.{}", state.current_time.minutes, state.current_time.seconds, state.current_time.tenths) }
+                </div>                
                 <div id="buttonDisplay">
-                <button aria-label="Start" onclick={ start } id="startButton">{ "Start" }</button>
-                <button aria-label="Stop" onclick={ stop } id="stopButton">{ "Stop" }</button>
-                <button aria-label="Reset" onclick={ reset } id="resetButton">{ "Reset" }</button>
-                <button aria-label="Decrement Round" onclick={ on_subtract_round } id="decrementRoundButton">{ "-Round" }</button>
-                <button aria-label="Increment Round" onclick={ on_add_round } id="incrementRoundButton">{ "+Round" }</button>
-                <button aria-label="Decrement 15" onclick={ on_subtract_quarter } id="decrementQuarterButton">{ "-15" }</button>
-                <button aria-label="Increment 15" onclick={ on_add_quarter } id="incrementQuarterButton">{ "+15" }</button>
-                <button aria-label="Decrement Second" onclick={ on_subtract_second } id="decrementSecondButton">{ "-1" }</button>
-                <button aria-label="Increment Second" onclick={ on_add_second } id="incrementSecondButton">{ "+1" }</button>
+                    <button aria-label="Start" onclick={ start } id="startButton">{ "Start" }</button>
+                    <button aria-label="Start" onclick={ stop } id="stopButton">{ "Pause" }</button>
+                    <button aria-label="Reset" onclick={ reset } id="resetButton">{ "Reset" }</button>
+                    <button aria-label="Decrement Round" onclick={ on_subtract_round } id="decrementRoundButton">{ "-Round" }</button>
+                    <button aria-label="Increment Round" onclick={ on_add_round } id="incrementRoundButton">{ "+Round" }</button>
+                    <button aria-label="Decrement 15" onclick={ on_subtract_quarter } id="decrementQuarterButton">{ "-15" }</button>
+                    <button aria-label="Increment 15" onclick={ on_add_quarter } id="incrementQuarterButton">{ "+15" }</button>
+                    <button aria-label="Decrement Second" onclick={ on_subtract_second } id="decrementSecondButton">{ "-1" }</button>
+                    <button aria-label="Increment Second" onclick={ on_add_second } id="incrementSecondButton">{ "+1" }</button>
                 </div>
                 <h5><a href="https://github.com/jac18281828/emomtimer">{ "GitHub" }</a></h5>
                 </div>

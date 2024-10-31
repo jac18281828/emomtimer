@@ -209,7 +209,7 @@ impl Component for App {
                 </div>
                 <div class="timerDisplay" id="timerDisplay">
                     { format!("{}:{:02}.{}", state.current_time.minutes, state.current_time.seconds, state.current_time.tenths) }
-                </div>                
+                </div>
                 <div id="buttonDisplay">
                     <button aria-label="Start" onclick={ start } id="startButton">{ "Start" }</button>
                     <button aria-label="Start" onclick={ stop } id="stopButton">{ "Pause" }</button>

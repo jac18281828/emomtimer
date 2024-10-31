@@ -13,3 +13,11 @@ RUN cargo install trunk
 RUN rustup target add wasm32-unknown-unknown
 
 COPY --chown=rust:rust . .
+
+RUN yamlfmt -lint .github/*.yml .github/workflows/*.yml
+
+RUN cargo fmt --check
+RUN cargo clippy --all-features --no-deps
+RUN cargo test
+
+CMD trunk build --release

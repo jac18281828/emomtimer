@@ -21,6 +21,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
+          file: .githbu/docker/Dockerfile.build
           push: false
           tags: |
             ${{ github.event.repository.name }}:${{ github.sha }}

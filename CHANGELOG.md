@@ -1,4 +1,8 @@
-# 1.0.10 (1024-10-31)
+# 1.0.11 (2024-10-31)
+
+* fix: button size
+
+# 1.0.10 (2024-10-31)
 
 * feat: adjust viewport to be dynamic
 

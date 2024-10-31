@@ -12,5 +12,14 @@
 		"ghcr.io/devcontainers/features/common-utils:2": {
 			"version": "latest"
 		}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"fill-labs.dependi",
+				"vadimcn.vscode-lldb",
+				"rust-lang.rust-analyzer"
+			]
+		}
 	}
 }

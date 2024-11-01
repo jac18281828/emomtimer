@@ -9,7 +9,7 @@ ENV USER=rust
 ENV PATH=/home/${USER}/.cargo/bin:${PATH}::/usr/local/go/bin
 # source $HOME/.cargo/env
 
-RUN cargo install trunk
-RUN rustup target add wasm32-unknown-unknown
+RUN cargo install trunk && \
+    rustup target add wasm32-unknown-unknown
 
 COPY --chown=rust:rust . .

@@ -18,7 +18,9 @@ pub struct App {
 impl App {
     fn start(&mut self, ctx: &Context<Self>) {
         self.cancel(); // Cancel any existing timeout
-        self.timer.current_round = 1;
+        if self.timer.current_round >= self.timer.rounds {
+            self.timer.current_round = 1;
+        }
         let start_time = Date::now();
         self.next_tick_time = start_time + 100.0; // Schedule first tick after 100ms
         self.timer.running = true;

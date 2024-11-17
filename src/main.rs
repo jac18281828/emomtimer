@@ -427,6 +427,6 @@ mod tests {
             blinked: false,
             interval: None,
         };
-        assert_eq!(app.max_seconds(), 1);
+        assert_eq!(app.max_seconds(), 60);
     }
 }

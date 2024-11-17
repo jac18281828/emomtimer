@@ -1,4 +1,5 @@
-use gloo_timers::callback::Interval;
+use gloo_timers::callback::Timeout;
+use js_sys::Date;
 use log::info;
 use yew::{html, Component, Context, Html};
 
@@ -10,53 +11,86 @@ pub struct App {
     round_time: Time,
     timer: Timer,
     blinked: bool,
-    interval: Option<Interval>,
+    timeout_handle: Option<Timeout>,
+    next_tick_time: f64,
 }
 
 impl App {
+    fn start(&mut self, ctx: &Context<Self>) {
+        self.cancel(); // Cancel any existing timeout
+        self.timer.current_round = 1;
+        let start_time = Date::now();
+        self.next_tick_time = start_time + 100.0; // Schedule first tick after 100ms
+        self.timer.running = true;
+        self.schedule_tick(ctx);
+    }
+
+    fn schedule_tick(&mut self, ctx: &Context<Self>) {
+        let now = Date::now();
+        // extra millisecond to ensure tick is called prior to next tenth
+        let delay = self.next_tick_time - now - 1.0;
+        let delay = delay.max(0.0).floor() as u32;
+
+        let link = ctx.link().clone();
+        if self.timer.running {
+            let handle = Timeout::new(delay, move || {
+                link.send_message(Msg::Tick);
+            });
+            self.timeout_handle = Some(handle);
+        } else {
+            self.timeout_handle = None;
+        }
+    }
+
+    fn tick(&mut self, ctx: &Context<Self>) {
+        // Update the next tick time
+        self.next_tick_time += 100.0; // Schedule next tick after 100ms
+
+        // Handle the tick
+        self.timer.current_time.tick(self.max_seconds());
+        if self.timer.current_time.is_zero() {
+            self.tick_update_end_of_round();
+        } else if self.timer.current_round > 1 && self.timer.current_time.tenths == 0 {
+            self.toggle_blinked();
+        }
+
+        // Schedule the next tick
+        self.schedule_tick(ctx);
+    }
+
+    fn tick_update_end_of_round(&mut self) {
+        info!("end of round");
+        self.timer.current_time = self.round_time;
+        self.blinked = !self.blinked;
+
+        if self.timer.current_round >= self.timer.rounds {
+            info!("end of timer");
+            self.cancel();
+        } else {
+            self.timer.current_round += 1;
+        }
+    }
+
     fn cancel(&mut self) {
-        if let Some(intr_val) = self.interval.take() {
-            intr_val.cancel();
+        if let Some(handle) = self.timeout_handle.take() {
+            handle.cancel();
         }
         self.timer.running = false;
         self.blinked = false;
     }
 
     fn reset(&mut self) {
+        if let Some(handle) = self.timeout_handle.take() {
+            handle.cancel();
+        }
         self.round_time.reset();
         self.timer.reset();
         self.blinked = false;
     }
 
-    fn start(&mut self, ctx: &Context<Self>) {
-        info!("starting");
-        let link = ctx.link().clone();
-        let tick_callback = move || link.send_message(Msg::Tick);
-        let handle = Interval::new(98, tick_callback);
-        self.interval = Some(handle);
-    }
-
     fn stop(&mut self) {
         info!("stopping");
         self.cancel();
-    }
-
-    fn tick(&mut self) {
-        self.timer.current_time.tick(self.max_seconds());
-        if self.timer.current_time.is_zero() {
-            info!("end of round");
-            self.timer.current_round += 1;
-            self.timer.current_time = self.round_time;
-            self.blinked = !self.blinked;
-
-            if self.timer.current_round > self.timer.rounds {
-                info!("end of timer");
-                self.timer.current_round = 1;
-                self.cancel();
-            }
-        } else if self.timer.current_round > 1 && self.timer.current_time.tenths == 0 {
-            self.toggle_blinked();
-        }
     }
 
     fn max_seconds(&self) -> usize {
@@ -109,14 +143,15 @@ impl Component for App {
                 running: false,
             },
             blinked: false,
-            interval: None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
         }
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Start => {
-                if self.interval.is_none() {
+                if self.timeout_handle.is_none() {
                     self.start(ctx);
                 }
                 true
@@ -126,7 +161,7 @@ impl Component for App {
                 true
             }
             Msg::Tick => {
-                self.tick();
+                self.tick(ctx);
                 true
             }
             Msg::Reset => {
@@ -257,7 +292,8 @@ mod tests {
                 running: false,
             },
             blinked: false,
-            interval: None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
         };
         assert_eq!(app.max_seconds(), 60);
     }
@@ -281,7 +317,8 @@ mod tests {
                 running: false,
             },
             blinked: false,
-            interval: None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
         };
         assert_eq!(app.max_seconds(), 1);
     }
@@ -305,7 +342,8 @@ mod tests {
                 running: false,
             },
             blinked: false,
-            interval: None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
         };
         assert_eq!(app.max_seconds(), 1);
     }
@@ -329,7 +367,8 @@ mod tests {
                 running: false,
             },
             blinked: false,
-            interval: None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
         };
         assert_eq!(app.max_seconds(), 60);
     }
@@ -353,7 +392,8 @@ mod tests {
                 running: false,
             },
             blinked: false,
-            interval: None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
         };
         assert_eq!(app.max_seconds(), 60);
     }
@@ -377,7 +417,8 @@ mod tests {
                 running: false,
             },
             blinked: false,
-            interval: None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
         };
         assert_eq!(app.max_seconds(), 60);
     }
@@ -401,7 +442,8 @@ mod tests {
                 running: false,
             },
             blinked: false,
-            interval: None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
         };
         assert_eq!(app.max_seconds(), 60);
     }
@@ -425,7 +467,8 @@ mod tests {
                 running: false,
             },
             blinked: false,
-            interval: None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
         };
         assert_eq!(app.max_seconds(), 60);
     }

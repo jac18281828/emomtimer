@@ -1,3 +1,7 @@
+# 1.0.13 (2024-11-17)
+
+* accurate timing using date to correct drift
+
 # 1.0.12 (2024-11-16)
 
 * fix decrement to 58 seconds bug

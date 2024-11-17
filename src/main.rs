@@ -60,10 +60,10 @@ impl App {
     }
 
     fn max_seconds(&self) -> usize {
-        if self.round_time.minutes > 0 || self.round_time.seconds == 0 {
+        if self.round_time.minutes > 0 {
             60
         } else {
-            self.round_time.seconds
+            self.round_time.seconds.max(1)
         }
     }
 
@@ -232,4 +232,201 @@ fn main() {
     wasm_logger::init(wasm_logger::Config::default());
     info!("Starting up");
     yew::Renderer::<App>::new().render();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_max_seconds() {
+        let app = App {
+            round_time: Time {
+                seconds: 30,
+                minutes: 1,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 30,
+                    minutes: 1,
+                    tenths: 0,
+                },
+                rounds: 1,
+                current_round: 1,
+                running: false,
+            },
+            blinked: false,
+            interval: None,
+        };
+        assert_eq!(app.max_seconds(), 60);
+    }
+
+    #[test]
+    fn test_max_seconds_zero() {
+        let app = App {
+            round_time: Time {
+                seconds: 0,
+                minutes: 0,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 0,
+                    minutes: 0,
+                    tenths: 0,
+                },
+                rounds: 1,
+                current_round: 1,
+                running: false,
+            },
+            blinked: false,
+            interval: None,
+        };
+        assert_eq!(app.max_seconds(), 1);
+    }
+
+    #[test]
+    fn test_max_seconds_one() {
+        let app = App {
+            round_time: Time {
+                seconds: 1,
+                minutes: 0,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 1,
+                    minutes: 0,
+                    tenths: 0,
+                },
+                rounds: 1,
+                current_round: 1,
+                running: false,
+            },
+            blinked: false,
+            interval: None,
+        };
+        assert_eq!(app.max_seconds(), 1);
+    }
+
+    #[test]
+    fn test_max_seconds_one_minute() {
+        let app = App {
+            round_time: Time {
+                seconds: 0,
+                minutes: 1,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 0,
+                    minutes: 1,
+                    tenths: 0,
+                },
+                rounds: 1,
+                current_round: 1,
+                running: false,
+            },
+            blinked: false,
+            interval: None,
+        };
+        assert_eq!(app.max_seconds(), 60);
+    }
+
+    #[test]
+    fn test_max_seconds_one_minute_one_second() {
+        let app = App {
+            round_time: Time {
+                seconds: 1,
+                minutes: 1,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 1,
+                    minutes: 1,
+                    tenths: 0,
+                },
+                rounds: 1,
+                current_round: 1,
+                running: false,
+            },
+            blinked: false,
+            interval: None,
+        };
+        assert_eq!(app.max_seconds(), 60);
+    }
+
+    #[test]
+    fn test_max_seconds_one_minute_one_second_one_tenth() {
+        let app = App {
+            round_time: Time {
+                seconds: 1,
+                minutes: 1,
+                tenths: 1,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 1,
+                    minutes: 1,
+                    tenths: 1,
+                },
+                rounds: 1,
+                current_round: 1,
+                running: false,
+            },
+            blinked: false,
+            interval: None,
+        };
+        assert_eq!(app.max_seconds(), 60);
+    }
+
+    #[test]
+    fn test_max_seconds_one_minute_one_tenth() {
+        let app = App {
+            round_time: Time {
+                seconds: 0,
+                minutes: 1,
+                tenths: 1,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 0,
+                    minutes: 1,
+                    tenths: 1,
+                },
+                rounds: 1,
+                current_round: 1,
+                running: false,
+            },
+            blinked: false,
+            interval: None,
+        };
+        assert_eq!(app.max_seconds(), 60);
+    }
+
+    #[test]
+    fn test_max_seconds_one_minute_one_tenth_zero_seconds() {
+        let app = App {
+            round_time: Time {
+                seconds: 0,
+                minutes: 1,
+                tenths: 1,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 0,
+                    minutes: 1,
+                    tenths: 0,
+                },
+                rounds: 1,
+                current_round: 1,
+                running: false,
+            },
+            blinked: false,
+            interval: None,
+        };
+        assert_eq!(app.max_seconds(), 1);
+    }
 }

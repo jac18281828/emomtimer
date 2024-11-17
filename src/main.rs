@@ -154,10 +154,9 @@ impl Component for App {
             }
             Msg::DecrementSecond => {
                 info!("decrementing seconds");
-                self.round_time.decrement_seconds(self.max_seconds());
-                self.timer
-                    .current_time
-                    .decrement_seconds(self.max_seconds());
+                let max_seconds = self.max_seconds();
+                self.round_time.decrement_seconds(max_seconds);
+                self.timer.current_time.decrement_seconds(max_seconds);
                 self.toggle_blinked_off();
                 true
             }

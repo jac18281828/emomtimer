@@ -44,7 +44,7 @@ jobs:
         run: |
           rustup component add rustfmt clippy
           rustup target add wasm32-unknown-unknown
-          cargo install trunk
+          cargo install trunk wasm-bindgen-cli
       - name: Rust Build and Check
         run: |
           cargo fmt --check

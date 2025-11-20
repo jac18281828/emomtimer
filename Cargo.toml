@@ -2,6 +2,14 @@
 name = "emom"
 version = "1.0.15"
 edition = "2024"
+description = "A customizable EMOM (Every Minute On the Minute) timer for workouts, built with Rust and Yew for WebAssembly"
+license = "BSD-3-Clause"
+repository = "https://github.com/jac18281828/emomtimer"
+homepage = "https://github.com/jac18281828/emomtimer"
+documentation = "https://jac18281828.github.io/emomtimer/"
+keywords = ["timer", "workout", "emom", "wasm", "yew"]
+categories = ["wasm", "web-programming"]
+readme = "README.md"
 
 [dependencies]
 gloo-timers = "0.3.0"

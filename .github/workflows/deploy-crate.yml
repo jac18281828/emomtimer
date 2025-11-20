@@ -49,7 +49,7 @@ jobs:
                   draft: false
                   prerelease: false
                   tag_name: ${{ github.ref_name }}
-                  name: Release v${{ github.ref_name }}
+                  name: Release ${{ github.ref_name }}
                   body: |
                       ## What's Changed
 
@@ -58,7 +58,7 @@ jobs:
                       ## Installation
 
                       ```bash
-                      cargo install parsm --version ${{ github.ref_name }}
+                      cargo install emom
                       ```
 
                       Or download the binaries from the assets below.

@@ -5,12 +5,19 @@ use yew::{html, Component, Context, Html};
 
 use emom::emomtimer::{Msg, Time, Timer, DEFAULT_MINUTES, DEFAULT_ROUNDS, DEFAULT_SECONDS};
 
-const BLINKED_COUNT: usize = 4;
+const BLINKED_COUNT: usize = 3;
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum BlinkState {
+    Red,
+    Green,
+    None,
+}
 
 pub struct App {
     round_time: Time,
     timer: Timer,
-    blinked: bool,
+    blink_state: BlinkState,
     timeout_handle: Option<Timeout>,
     next_tick_time: f64,
 }
@@ -52,8 +59,8 @@ impl App {
         self.timer.current_time.tick(self.max_seconds());
         if self.timer.current_time.is_zero() {
             self.tick_update_end_of_round();
-        } else if self.timer.current_round > 1 && self.timer.current_time.tenths == 0 {
-            self.toggle_blinked();
+        } else {
+            self.update_blink_state();
         }
 
         // Schedule the next tick
@@ -63,13 +70,15 @@ impl App {
     fn tick_update_end_of_round(&mut self) {
         info!("end of round");
         self.timer.current_time = self.round_time;
-        self.blinked = !self.blinked;
 
         if self.timer.current_round >= self.timer.rounds {
             info!("end of timer");
+            self.blink_state = BlinkState::None;
             self.cancel();
         } else {
             self.timer.current_round += 1;
+            // Update blink state immediately for the new round
+            self.update_blink_state();
         }
     }
 
@@ -78,7 +87,7 @@ impl App {
             handle.cancel();
         }
         self.timer.running = false;
-        self.blinked = false;
+        self.blink_state = BlinkState::None;
     }
 
     fn reset(&mut self) {
@@ -87,7 +96,7 @@ impl App {
         }
         self.round_time.reset();
         self.timer.reset();
-        self.blinked = false;
+        self.blink_state = BlinkState::None;
     }
 
     fn stop(&mut self) {
@@ -103,24 +112,38 @@ impl App {
         }
     }
 
-    fn toggle_blinked_off(&mut self) {
-        if emom::emomtimer::distance::<_>(
-            self.round_time.total_seconds(),
-            self.timer.current_time.total_seconds(),
-        ) >= BLINKED_COUNT
-            && self.blinked
-        {
-            self.blinked = false;
-        }
+    fn clear_blink_state(&mut self) {
+        self.blink_state = BlinkState::None;
     }
 
-    fn toggle_blinked(&mut self) {
-        if emom::emomtimer::distance::<_>(
-            self.round_time.total_seconds(),
-            self.timer.current_time.total_seconds(),
-        ) < BLINKED_COUNT
+    fn update_blink_state(&mut self) {
+        let total_seconds = self.timer.current_time.total_seconds();
+        let round_seconds = self.round_time.total_seconds();
+
+        // Blink green at the start of the minute (when timer is close to max)
+        // Only after round 1 has started
+        // Blink for 3 seconds: when we're within the last 3 seconds counting down from round_seconds
+        // E.g., for 60 seconds: blink at 60, 59, 58 (total_seconds > 57 && total_seconds <= 60)
+        if self.timer.current_round > 1
+            && total_seconds > round_seconds - BLINKED_COUNT
+            && total_seconds <= round_seconds
         {
-            self.blinked = !self.blinked;
+            self.blink_state = if self.timer.current_time.tenths < 5 {
+                BlinkState::Green
+            } else {
+                BlinkState::None
+            };
+        }
+        // Blink red at the end of the minute (last 3 seconds)
+        // Blink on the first half of each second (tenths 0-4) for seconds 3, 2, 1
+        else if total_seconds > 0 && total_seconds <= BLINKED_COUNT {
+            self.blink_state = if self.timer.current_time.tenths < 5 {
+                BlinkState::Red
+            } else {
+                BlinkState::None
+            };
+        } else {
+            self.blink_state = BlinkState::None;
         }
     }
 }
@@ -144,7 +167,7 @@ impl Component for App {
                 current_round: 1,
                 running: false,
             },
-            blinked: false,
+            blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
         }
@@ -173,20 +196,20 @@ impl Component for App {
             Msg::IncrementRound => {
                 info!("incrementing rounds");
                 self.timer.increment_rounds();
-                self.toggle_blinked_off();
+                self.clear_blink_state();
                 true
             }
             Msg::DecrementRound => {
                 info!("decrementing rounds");
                 self.timer.decrement_rounds();
-                self.toggle_blinked_off();
+                self.clear_blink_state();
                 true
             }
             Msg::IncrementSecond => {
                 info!("incrementing seconds");
                 self.round_time.increment_seconds();
                 self.timer.current_time.increment_seconds();
-                self.toggle_blinked_off();
+                self.clear_blink_state();
                 true
             }
             Msg::DecrementSecond => {
@@ -194,21 +217,21 @@ impl Component for App {
                 let max_seconds = self.max_seconds();
                 self.round_time.decrement_seconds(max_seconds);
                 self.timer.current_time.decrement_seconds(max_seconds);
-                self.toggle_blinked_off();
+                self.clear_blink_state();
                 true
             }
             Msg::IncrementQuarter => {
                 info!("incrementing 15");
                 self.round_time.increment_quarter();
                 self.timer.current_time.increment_quarter();
-                self.toggle_blinked_off();
+                self.clear_blink_state();
                 true
             }
             Msg::DecrementQuarter => {
                 info!("decrementing 15");
                 self.round_time.decrement_quarter();
                 self.timer.current_time.decrement_quarter();
-                self.toggle_blinked_off();
+                self.clear_blink_state();
                 true
             }
         }
@@ -234,7 +257,13 @@ impl Component for App {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
                 <title>{ "EMOM Timer" }</title>
             </head>
-            <body style={if self.blinked { "color:red" } else { "color:black" }} >
+            <body style={
+                match self.blink_state {
+                    BlinkState::Red => "color:red",
+                    BlinkState::Green => "color:green",
+                    BlinkState::None => "color:black",
+                }
+            } >
                 <div id="background">
                     <div class="mainTitle">
                         <h3>{ "EMOM Timer" }</h3>
@@ -293,7 +322,7 @@ mod tests {
                 current_round: 1,
                 running: false,
             },
-            blinked: false,
+            blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
         };
@@ -318,7 +347,7 @@ mod tests {
                 current_round: 1,
                 running: false,
             },
-            blinked: false,
+            blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
         };
@@ -343,7 +372,7 @@ mod tests {
                 current_round: 1,
                 running: false,
             },
-            blinked: false,
+            blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
         };
@@ -368,7 +397,7 @@ mod tests {
                 current_round: 1,
                 running: false,
             },
-            blinked: false,
+            blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
         };
@@ -393,7 +422,7 @@ mod tests {
                 current_round: 1,
                 running: false,
             },
-            blinked: false,
+            blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
         };
@@ -418,7 +447,7 @@ mod tests {
                 current_round: 1,
                 running: false,
             },
-            blinked: false,
+            blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
         };
@@ -443,7 +472,7 @@ mod tests {
                 current_round: 1,
                 running: false,
             },
-            blinked: false,
+            blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
         };
@@ -468,7 +497,7 @@ mod tests {
                 current_round: 1,
                 running: false,
             },
-            blinked: false,
+            blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
         };

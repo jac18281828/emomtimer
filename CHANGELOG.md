@@ -1,3 +1,11 @@
+# 1.0.16 (2025-11-20)
+
+* deploy from role
+
+# 1.0.15 (2025-11-19)
+
+* fix github pages
+
 # 1.0.14 (2025-11-19)
 
 * implement red and green blinking

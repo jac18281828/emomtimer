@@ -18,11 +18,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v5
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          audience: sts.amazonaws.com
           aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: arn:aws:iam::504242000181:role/GithubDeployCI
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:

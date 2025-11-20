@@ -136,11 +136,7 @@ pub mod emomtimer {
     where
         T: std::ops::Sub<Output = T> + std::cmp::PartialOrd + Copy,
     {
-        if a > b {
-            a - b
-        } else {
-            b - a
-        }
+        if a > b { a - b } else { b - a }
     }
 
     #[cfg(test)]

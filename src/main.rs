@@ -1,9 +1,9 @@
 use gloo_timers::callback::Timeout;
 use js_sys::Date;
 use log::info;
-use yew::{html, Component, Context, Html};
+use yew::{Component, Context, Html, html};
 
-use emom::emomtimer::{Msg, Time, Timer, DEFAULT_MINUTES, DEFAULT_ROUNDS, DEFAULT_SECONDS};
+use emom::emomtimer::{DEFAULT_MINUTES, DEFAULT_ROUNDS, DEFAULT_SECONDS, Msg, Time, Timer};
 
 const BLINKED_COUNT: usize = 3;
 
@@ -77,8 +77,7 @@ impl App {
             self.cancel();
         } else {
             self.timer.current_round += 1;
-            // Update blink state immediately for the new round
-            self.update_blink_state();
+            self.blink_state = BlinkState::None;
         }
     }
 
@@ -119,29 +118,23 @@ impl App {
     fn update_blink_state(&mut self) {
         let total_seconds = self.timer.current_time.total_seconds();
         let round_seconds = self.round_time.total_seconds();
+        let tenths = self.timer.current_time.tenths;
 
-        // Blink green at the start of the minute (when timer is close to max)
+        // Blink green at 1, 2, and 3 second marks after round starts
         // Only after round 1 has started
-        // Blink for 3 seconds: when we're within the last 3 seconds counting down from round_seconds
-        // E.g., for 60 seconds: blink at 60, 59, 58 (total_seconds > 57 && total_seconds <= 60)
+        // E.g., for 60 seconds: blink at 59, 58, 57 (when 1, 2, 3 seconds have elapsed)
+        // Blink for 0.5 seconds (tenths 0-4) at the start of each second
         if self.timer.current_round > 1
-            && total_seconds > round_seconds - BLINKED_COUNT
-            && total_seconds <= round_seconds
+            && total_seconds > round_seconds - (BLINKED_COUNT + 1)
+            && total_seconds < round_seconds
+            && tenths <= 4
         {
-            self.blink_state = if self.timer.current_time.tenths < 5 {
-                BlinkState::Green
-            } else {
-                BlinkState::None
-            };
+            self.blink_state = BlinkState::Green;
         }
         // Blink red at the end of the minute (last 3 seconds)
-        // Blink on the first half of each second (tenths 0-4) for seconds 3, 2, 1
-        else if total_seconds > 0 && total_seconds <= BLINKED_COUNT {
-            self.blink_state = if self.timer.current_time.tenths < 5 {
-                BlinkState::Red
-            } else {
-                BlinkState::None
-            };
+        // Blink for 0.5 seconds (tenths 0-4) at seconds 3, 2, 1
+        else if total_seconds > 0 && total_seconds <= BLINKED_COUNT && tenths <= 4 {
+            self.blink_state = BlinkState::Red;
         } else {
             self.blink_state = BlinkState::None;
         }
@@ -502,5 +495,369 @@ mod tests {
             next_tick_time: 0.0,
         };
         assert_eq!(app.max_seconds(), 60);
+    }
+
+    #[test]
+    fn test_red_blink_at_3_seconds() {
+        let mut app = App {
+            round_time: Time {
+                seconds: 0,
+                minutes: 1,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 3,
+                    minutes: 0,
+                    tenths: 0,
+                },
+                rounds: 10,
+                current_round: 1,
+                running: false,
+            },
+            blink_state: BlinkState::None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
+        };
+        app.update_blink_state();
+        assert_eq!(app.blink_state, BlinkState::Red);
+    }
+
+    #[test]
+    fn test_red_blink_at_3_seconds_middle() {
+        let mut app = App {
+            round_time: Time {
+                seconds: 0,
+                minutes: 1,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 3,
+                    minutes: 0,
+                    tenths: 4,
+                },
+                rounds: 10,
+                current_round: 1,
+                running: false,
+            },
+            blink_state: BlinkState::None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
+        };
+        app.update_blink_state();
+        assert_eq!(app.blink_state, BlinkState::Red);
+    }
+
+    #[test]
+    fn test_no_red_blink_at_3_seconds_late() {
+        let mut app = App {
+            round_time: Time {
+                seconds: 0,
+                minutes: 1,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 3,
+                    minutes: 0,
+                    tenths: 5,
+                },
+                rounds: 10,
+                current_round: 1,
+                running: false,
+            },
+            blink_state: BlinkState::None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
+        };
+        app.update_blink_state();
+        assert_eq!(app.blink_state, BlinkState::None);
+    }
+
+    #[test]
+    fn test_red_blink_at_1_second() {
+        let mut app = App {
+            round_time: Time {
+                seconds: 0,
+                minutes: 1,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 1,
+                    minutes: 0,
+                    tenths: 2,
+                },
+                rounds: 10,
+                current_round: 1,
+                running: false,
+            },
+            blink_state: BlinkState::None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
+        };
+        app.update_blink_state();
+        assert_eq!(app.blink_state, BlinkState::Red);
+    }
+
+    #[test]
+    fn test_no_red_blink_at_0_seconds() {
+        let mut app = App {
+            round_time: Time {
+                seconds: 0,
+                minutes: 1,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 0,
+                    minutes: 0,
+                    tenths: 5,
+                },
+                rounds: 10,
+                current_round: 1,
+                running: false,
+            },
+            blink_state: BlinkState::None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
+        };
+        app.update_blink_state();
+        assert_eq!(app.blink_state, BlinkState::None);
+    }
+
+    #[test]
+    fn test_no_green_blink_round_1() {
+        let mut app = App {
+            round_time: Time {
+                seconds: 0,
+                minutes: 1,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 59,
+                    minutes: 0,
+                    tenths: 0,
+                },
+                rounds: 10,
+                current_round: 1,
+                running: false,
+            },
+            blink_state: BlinkState::None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
+        };
+        app.update_blink_state();
+        assert_eq!(app.blink_state, BlinkState::None);
+    }
+
+    #[test]
+    fn test_green_blink_at_59_seconds_round_2() {
+        let mut app = App {
+            round_time: Time {
+                seconds: 0,
+                minutes: 1,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 59,
+                    minutes: 0,
+                    tenths: 0,
+                },
+                rounds: 10,
+                current_round: 2,
+                running: false,
+            },
+            blink_state: BlinkState::None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
+        };
+        app.update_blink_state();
+        assert_eq!(app.blink_state, BlinkState::Green);
+    }
+
+    #[test]
+    fn test_green_blink_at_58_seconds_round_5() {
+        let mut app = App {
+            round_time: Time {
+                seconds: 0,
+                minutes: 1,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 58,
+                    minutes: 0,
+                    tenths: 3,
+                },
+                rounds: 10,
+                current_round: 5,
+                running: false,
+            },
+            blink_state: BlinkState::None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
+        };
+        app.update_blink_state();
+        assert_eq!(app.blink_state, BlinkState::Green);
+    }
+
+    #[test]
+    fn test_no_green_blink_at_60_seconds() {
+        let mut app = App {
+            round_time: Time {
+                seconds: 0,
+                minutes: 1,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 0,
+                    minutes: 1,
+                    tenths: 0,
+                },
+                rounds: 10,
+                current_round: 2,
+                running: false,
+            },
+            blink_state: BlinkState::None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
+        };
+        app.update_blink_state();
+        assert_eq!(app.blink_state, BlinkState::None);
+    }
+
+    #[test]
+    fn test_no_green_blink_at_56_seconds() {
+        let mut app = App {
+            round_time: Time {
+                seconds: 0,
+                minutes: 1,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 56,
+                    minutes: 0,
+                    tenths: 0,
+                },
+                rounds: 10,
+                current_round: 2,
+                running: false,
+            },
+            blink_state: BlinkState::None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
+        };
+        app.update_blink_state();
+        assert_eq!(app.blink_state, BlinkState::None);
+    }
+
+    #[test]
+    fn test_clear_blink_state() {
+        let mut app = App {
+            round_time: Time {
+                seconds: 0,
+                minutes: 1,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 3,
+                    minutes: 0,
+                    tenths: 0,
+                },
+                rounds: 10,
+                current_round: 1,
+                running: false,
+            },
+            blink_state: BlinkState::Red,
+            timeout_handle: None,
+            next_tick_time: 0.0,
+        };
+        app.clear_blink_state();
+        assert_eq!(app.blink_state, BlinkState::None);
+    }
+
+    #[test]
+    fn test_no_blink_at_30_seconds() {
+        let mut app = App {
+            round_time: Time {
+                seconds: 0,
+                minutes: 1,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 30,
+                    minutes: 0,
+                    tenths: 5,
+                },
+                rounds: 10,
+                current_round: 3,
+                running: false,
+            },
+            blink_state: BlinkState::None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
+        };
+        app.update_blink_state();
+        assert_eq!(app.blink_state, BlinkState::None);
+    }
+
+    #[test]
+    fn test_green_blink_at_57_seconds() {
+        let mut app = App {
+            round_time: Time {
+                seconds: 0,
+                minutes: 1,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 57,
+                    minutes: 0,
+                    tenths: 4,
+                },
+                rounds: 10,
+                current_round: 2,
+                running: false,
+            },
+            blink_state: BlinkState::None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
+        };
+        app.update_blink_state();
+        assert_eq!(app.blink_state, BlinkState::Green);
+    }
+
+    #[test]
+    fn test_red_blink_at_2_seconds() {
+        let mut app = App {
+            round_time: Time {
+                seconds: 0,
+                minutes: 1,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 2,
+                    minutes: 0,
+                    tenths: 1,
+                },
+                rounds: 10,
+                current_round: 1,
+                running: false,
+            },
+            blink_state: BlinkState::None,
+            timeout_handle: None,
+            next_tick_time: 0.0,
+        };
+        app.update_blink_state();
+        assert_eq!(app.blink_state, BlinkState::Red);
     }
 }

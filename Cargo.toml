@@ -1,11 +1,11 @@
 [package]
 name = "emom"
-version = "0.1.0"
-edition = "2021"
+version = "1.0.14"
+edition = "2024"
 
 [dependencies]
 gloo-timers = "0.3.0"
-log = "0.4.20"
+log = "0.4.28"
 wasm-logger = "0.2.0"
 yew = { version="0.21.0", features=["csr"] }
-js-sys = "0.3.72"
+js-sys = "0.3.82"

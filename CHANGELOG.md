@@ -1,3 +1,7 @@
+# 1.0.14 (2025-11-19)
+
+* implement red and green blinking
+
 # 1.0.13 (2024-11-17)
 
 * accurate timing using date to correct drift

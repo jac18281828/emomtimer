@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 # Add explicit permissions
 permissions:
-  contents: write
+  contents: read
   packages: write
   id-token: write
 # Allow one concurrent deployment

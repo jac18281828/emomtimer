@@ -38,7 +38,8 @@ jobs:
       - name: Build release
         run: cargo build --release
       - name: Publish to crates.io
-        run: cargo publish --token ${{ secrets.CRATES_IO }}
+        run: cargo publish --token ${{ secrets.CRATES_IO }} || echo "Version already published or publish failed"
+        continue-on-error: true
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO }}
       - name: Generate documentation

@@ -18,10 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup Pages
-        uses: actions/configure-pages@v2
-      - uses: actions/setup-python@v2
+        uses: actions/configure-pages@v5
+      - uses: actions/setup-python@v5
       - name: Install rust
         uses: actions-rs/toolchain@v1
         with:
@@ -45,7 +45,7 @@ jobs:
           chmod -R +rX _site
         id: docgen
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3
   # Deployment job
   deploy:
     environment:
@@ -56,4 +56,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4

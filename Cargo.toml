@@ -1,6 +1,6 @@
 [package]
 name = "emom"
-version = "1.0.16"
+version = "1.0.17"
 edition = "2024"
 description = "A customizable EMOM (Every Minute On the Minute) timer for workouts, built with Rust and Yew for WebAssembly"
 license = "BSD-3-Clause"

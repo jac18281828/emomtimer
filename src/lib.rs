@@ -161,7 +161,7 @@ pub mod emomtimer {
             assert_eq!(timer.current_time.tenths, 0);
             assert_eq!(timer.rounds, DEFAULT_ROUNDS);
             assert_eq!(timer.current_round, 1);
-            assert_eq!(timer.running, false);
+            assert!(!timer.running);
         }
 
         #[test]
@@ -374,15 +374,15 @@ pub mod emomtimer {
                 minutes: 0,
                 tenths: 0,
             };
-            assert_eq!(time.is_zero(), true);
+            assert!(time.is_zero());
             time.seconds = 1;
-            assert_eq!(time.is_zero(), false);
+            assert!(!time.is_zero());
             time.seconds = 0;
             time.minutes = 1;
-            assert_eq!(time.is_zero(), false);
+            assert!(!time.is_zero());
             time.minutes = 0;
             time.tenths = 1;
-            assert_eq!(time.is_zero(), false);
+            assert!(!time.is_zero());
         }
 
         #[test]

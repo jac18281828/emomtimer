@@ -1,0 +1,68 @@
+name: Deploy to crates.io
+on:
+    push:
+        tags:
+            - '*'
+# Add explicit permissions
+permissions:
+    contents: write
+    packages: write
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            - name: Setup Rust
+              uses: actions-rs/toolchain@v1
+              with:
+                  toolchain: stable
+                  override: true
+                  components: rustfmt, clippy
+            - name: Cache cargo registry
+              uses: actions/cache@v4
+              with:
+                  path: |
+                      ~/.cargo/registry
+                      ~/.cargo/git
+                      target
+                  key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-cargo-
+            - name: Format check
+              run: cargo fmt --all -- --check
+            - name: Clippy check
+              run: cargo clippy --all-targets --all-features -- -D warnings
+            - name: Run tests
+              run: cargo test --all
+            - name: Build release
+              run: cargo build --release
+            - name: Publish to crates.io
+              run: cargo publish --token ${{ secrets.CRATES_IO }}
+              env:
+                  CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO }}
+            - name: Generate documentation
+              run: cargo doc --no-deps --all-features
+            - name: GitHub Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  draft: false
+                  prerelease: false
+                  tag_name: ${{ github.ref_name }}
+                  name: Release v${{ github.ref_name }}
+                  body: |
+                      ## What's Changed
+
+                      See [CHANGELOG.md](CHANGELOG.md) for detailed changes.
+
+                      ## Installation
+
+                      ```bash
+                      cargo install parsm --version ${{ github.ref_name }}
+                      ```
+
+                      Or download the binaries from the assets below.
+                  generate_release_notes: true
+                  make_latest: true
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

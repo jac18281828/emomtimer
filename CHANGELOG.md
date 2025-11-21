@@ -1,3 +1,7 @@
+# 1.0.18 (2025-11-20)
+
+* tick improvements
+
 # 1.0.17 (2025-11-20)
 
 * deployment

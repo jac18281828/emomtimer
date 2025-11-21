@@ -38,11 +38,16 @@ pub mod emomtimer {
             if self.is_zero() {
                 return;
             }
-            if self.tenths == 0 {
-                self.decrement_seconds(max_seconds);
-                self.tenths = 9;
-            } else {
+            // Decrement tenths first
+            if self.tenths > 0 {
                 self.tenths -= 1;
+            } else {
+                // tenths is 0, so we need to decrement seconds and wrap tenths to 9
+                self.decrement_seconds(max_seconds);
+                // Only set tenths to 9 if we didn't hit zero
+                if !self.is_zero() {
+                    self.tenths = 9;
+                }
             }
         }
 
@@ -390,6 +395,102 @@ pub mod emomtimer {
             assert_eq!(distance(1, 2), 1);
             assert_eq!(distance(2, 1), 1);
             assert_eq!(distance(1, 1), 0);
+        }
+
+        #[test]
+        fn test_tick_countdown_sequence() {
+            // Test that ticking properly counts down through all tenths
+            // This test ensures we don't skip the second-to-last second
+            let mut time = Time {
+                seconds: 14,
+                minutes: 0,
+                tenths: 2,
+            };
+            // Tick from 14.2 -> 14.1
+            time.tick(60);
+            assert_eq!(time.seconds, 14);
+            assert_eq!(time.tenths, 1);
+            // Tick from 14.1 -> 14.0
+            time.tick(60);
+            assert_eq!(time.seconds, 14);
+            assert_eq!(time.tenths, 0);
+            // Tick from 14.0 -> 13.9 (this is where the bug was)
+            time.tick(60);
+            assert_eq!(time.seconds, 13);
+            assert_eq!(time.tenths, 9);
+            // Continue ticking
+            time.tick(60);
+            assert_eq!(time.seconds, 13);
+            assert_eq!(time.tenths, 8);
+        }
+
+        #[test]
+        fn test_15_second_timer_countdown() {
+            // Test a 15 second timer counting down
+            // Timer starts at 15.0 and should count: 15.0, 14.9, 14.8, ..., 14.1, 14.0, 13.9, ...
+            let mut time = Time {
+                seconds: 15,
+                minutes: 0,
+                tenths: 0,
+            };
+
+            // First tick from 15.0 should go to 14.9 (decrement second, set tenths to 9)
+            time.tick(60);
+            assert_eq!(time.seconds, 14, "After first tick from 15.0");
+            assert_eq!(time.tenths, 9, "After first tick from 15.0");
+
+            // Continue counting down second 14: 14.9 -> 14.8 -> ... -> 14.0
+            for expected_tenth in (0..=8).rev() {
+                time.tick(60);
+                assert_eq!(
+                    time.seconds, 14,
+                    "Second mismatch at tenth {}",
+                    expected_tenth
+                );
+                assert_eq!(
+                    time.tenths, expected_tenth,
+                    "Tenth mismatch at {}",
+                    expected_tenth
+                );
+            }
+
+            // Next tick from 14.0 should go to 13.9
+            time.tick(60);
+            assert_eq!(time.seconds, 13);
+            assert_eq!(time.tenths, 9);
+        }
+
+        #[test]
+        fn test_full_15_second_countdown() {
+            // Simulate complete 15 second countdown to catch any skips
+            let mut time = Time {
+                seconds: 15,
+                minutes: 0,
+                tenths: 0,
+            };
+
+            let mut history = Vec::new();
+
+            // Count down all the way to zero
+            while !time.is_zero() {
+                history.push((time.minutes, time.seconds, time.tenths));
+                time.tick(60);
+            }
+
+            // Debug: print the history around 14
+            println!("History around 14:");
+            for (i, (m, s, t)) in history.iter().enumerate() {
+                if *s >= 13 && *s <= 15 {
+                    println!("  [{}]: {}:{}.{}", i, m, s, t);
+                }
+            }
+
+            println!("Total history length: {}", history.len());
+
+            // Should start at 15.0
+            assert_eq!(history[0], (0, 15, 0));
+            // First tick to 14.9
+            assert_eq!(history[1], (0, 14, 9));
         }
 
         #[test]

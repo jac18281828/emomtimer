@@ -20,6 +20,7 @@ pub struct App {
     blink_state: BlinkState,
     timeout_handle: Option<Timeout>,
     next_tick_time: f64,
+    round_start_time: f64,
 }
 
 impl App {
@@ -30,15 +31,15 @@ impl App {
         }
         let start_time = Date::now();
         self.next_tick_time = start_time + 100.0; // Schedule first tick after 100ms
+        self.round_start_time = start_time;
         self.timer.running = true;
         self.schedule_tick(ctx);
     }
 
     fn schedule_tick(&mut self, ctx: &Context<Self>) {
         let now = Date::now();
-        // extra millisecond to ensure tick is called prior to next tenth
-        let delay = self.next_tick_time - now - 1.0;
-        let delay = delay.max(0.0).floor() as u32;
+        let delay = self.next_tick_time - now;
+        let delay = delay.max(0.0).round() as u32;
 
         let link = ctx.link().clone();
         if self.timer.running {
@@ -52,11 +53,39 @@ impl App {
     }
 
     fn tick(&mut self, ctx: &Context<Self>) {
-        // Update the next tick time
-        self.next_tick_time += 100.0; // Schedule next tick after 100ms
+        let now = Date::now();
 
-        // Handle the tick
+        // Update next tick time
+        self.next_tick_time += 100.0;
+
+        // Perform smooth tick countdown
         self.timer.current_time.tick(self.max_seconds());
+
+        // Every 10 ticks (1 second), sync with wall clock to prevent drift
+        if self.timer.current_time.tenths == 0 {
+            let elapsed_ms = now - self.round_start_time;
+            let elapsed_tenths = (elapsed_ms / 100.0).floor() as usize;
+            let max_tenths = self.max_tenths();
+
+            if elapsed_tenths <= max_tenths {
+                let target_tenths = max_tenths - elapsed_tenths;
+                let target_seconds = (target_tenths / 10) % 60;
+                let target_minutes = target_tenths / 600;
+
+                // Only sync if we're off by more than 1 tenth
+                let current_total_tenths = self.timer.current_time.minutes * 600
+                    + self.timer.current_time.seconds * 10
+                    + self.timer.current_time.tenths;
+
+                if current_total_tenths.abs_diff(target_tenths) > 1 {
+                    self.timer.current_time.seconds = target_seconds;
+                    self.timer.current_time.minutes = target_minutes;
+                    self.timer.current_time.tenths = target_tenths % 10;
+                }
+            }
+        }
+
+        // Handle end of round
         if self.timer.current_time.is_zero() {
             self.tick_update_end_of_round();
         } else {
@@ -70,6 +99,7 @@ impl App {
     fn tick_update_end_of_round(&mut self) {
         info!("end of round");
         self.timer.current_time = self.round_time;
+        self.round_start_time = Date::now(); // Reset clock sync for new round
 
         if self.timer.current_round >= self.timer.rounds {
             info!("end of timer");
@@ -109,6 +139,10 @@ impl App {
         } else {
             self.round_time.seconds.max(1)
         }
+    }
+
+    fn max_tenths(&self) -> usize {
+        self.round_time.minutes * 600 + self.round_time.seconds * 10
     }
 
     fn clear_blink_state(&mut self) {
@@ -163,6 +197,7 @@ impl Component for App {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         }
     }
 
@@ -318,6 +353,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         assert_eq!(app.max_seconds(), 60);
     }
@@ -343,6 +379,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         assert_eq!(app.max_seconds(), 1);
     }
@@ -368,6 +405,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         assert_eq!(app.max_seconds(), 1);
     }
@@ -393,6 +431,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         assert_eq!(app.max_seconds(), 60);
     }
@@ -418,6 +457,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         assert_eq!(app.max_seconds(), 60);
     }
@@ -443,6 +483,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         assert_eq!(app.max_seconds(), 60);
     }
@@ -468,6 +509,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         assert_eq!(app.max_seconds(), 60);
     }
@@ -493,6 +535,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         assert_eq!(app.max_seconds(), 60);
     }
@@ -518,6 +561,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::Red);
@@ -544,6 +588,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::Red);
@@ -570,6 +615,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::None);
@@ -596,6 +642,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::Red);
@@ -622,6 +669,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::None);
@@ -648,6 +696,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::None);
@@ -674,6 +723,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::Green);
@@ -700,6 +750,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::Green);
@@ -726,6 +777,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::None);
@@ -752,6 +804,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::None);
@@ -778,6 +831,7 @@ mod tests {
             blink_state: BlinkState::Red,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         app.clear_blink_state();
         assert_eq!(app.blink_state, BlinkState::None);
@@ -804,6 +858,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::None);
@@ -830,6 +885,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::Green);
@@ -856,6 +912,7 @@ mod tests {
             blink_state: BlinkState::None,
             timeout_handle: None,
             next_tick_time: 0.0,
+            round_start_time: 0.0,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::Red);

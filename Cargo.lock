@@ -98,7 +98,7 @@ dependencies = [
 
 [[package]]
 name = "emom"
-version = "1.0.18"
+version = "1.0.19"
 dependencies = [
  "gloo-timers 0.3.0",
  "js-sys",

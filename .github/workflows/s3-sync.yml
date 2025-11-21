@@ -2,20 +2,20 @@ name: Build and Sync to S3
 on:
   push:
     tags:
-      - "*"
+      - '*'
   workflow_dispatch:
 # Add explicit permissions
 permissions:
-  contents: read
+  contents: write
   packages: write
   id-token: write
 # Allow one concurrent deployment
 concurrency:
-  group: "sync-to-s3-${{ github.ref }}"
+  group: 'sync-to-s3-${{ github.ref }}'
   cancel-in-progress: true
 env:
-  S3_BUCKET_NAME: "emom-timer-us-east-2-504242000181"
-  AWS_REGION: "us-east-2"
+  S3_BUCKET_NAME: 'emom-timer-us-east-2-504242000181'
+  AWS_REGION: 'us-east-2'
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -37,8 +37,11 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            ~/.cargo/registry
-            ~/.cargo/bin
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Install Trunk and Wasm
         run: |
@@ -57,12 +60,14 @@ jobs:
         run: |
           aws s3 sync ./dist s3://${S3_BUCKET_NAME} --delete --region ${{ env.AWS_REGION }}
       - name: GitHub Release
-        uses: actions/create-release@v1.1.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
           draft: false
           prerelease: false
           tag_name: ${{ github.ref_name }}
-          release_name: v${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
           body_path: CHANGELOG.md
+          generate_release_notes: true
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

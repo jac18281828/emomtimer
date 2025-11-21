@@ -19,7 +19,7 @@ jobs:
           toolchain: stable
           override: true
           components: rustfmt, clippy
-      - name: Cache Rust dependencies
+      - name: Cache cargo registry
         uses: actions/cache@v4
         with:
           path: |

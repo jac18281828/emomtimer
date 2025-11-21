@@ -2,7 +2,7 @@ name: GitHub Pages
 on:
   push:
     tags:
-      - "*"
+      - '*'
   workflow_dispatch:
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -11,7 +11,7 @@ permissions:
   id-token: write
 # Allow one concurrent deployment
 concurrency:
-  group: "github-pages"
+  group: 'github-pages'
   cancel-in-progress: true
 jobs:
   build:
@@ -27,6 +27,18 @@ jobs:
         with:
           toolchain: stable
           profile: minimal
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
       - name: Install trunk and wasm
         run: "rustup toolchain install stable \nrustup component add rustfmt\nrustup component add clippy\ncargo install trunk\nrustup target add wasm32-unknown-unknown\n"
       - name: Rust Build and Check

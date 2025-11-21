@@ -1,7 +1,8 @@
 # EMOM Timer
 
-[![Build Dev Image CI](https://github.com/jac18281828/emomtimer/actions/workflows/ci-image.yml/badge.svg)](https://github.com/jac18281828/emomtimer/actions/workflows/ci-image.yml)
+[![CI/CD Pipeline](https://github.com/jac18281828/emomtimer/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/jac18281828/emomtimer/actions/workflows/ci-cd.yml)
 [![Build and Sync to S3](https://github.com/jac18281828/emomtimer/actions/workflows/s3-sync.yml/badge.svg)](https://github.com/jac18281828/emomtimer/actions/workflows/s3-sync.yml)
+[![Deploy to crates.io](https://github.com/jac18281828/emomtimer/actions/workflows/deploy-crate.yml/badge.svg)](https://github.com/jac18281828/emomtimer/actions/workflows/deploy-crate.yml)
 
 [![EMOM Timer](timer.png)](http://emom-timer-us-east-2-504242000181.s3-website.us-east-2.amazonaws.com)
 

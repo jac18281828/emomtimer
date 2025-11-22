@@ -30,9 +30,10 @@ body {
     }
 }
 
-@media (max-width: 480px) and (orientation: landscape) {
+/* Landscape: wider layout, less vertical padding */
+@media (max-width: 932px) and (orientation: landscape) {
     body {
-        padding: 8px;
+        padding: 8px 20px;
         align-items: center;
     }
 }
@@ -181,6 +182,18 @@ body::after {
     }
 }
 
+/* Landscape: wider, more compact */
+@media (max-width: 932px) and (orientation: landscape) {
+    #background {
+        width: 95%;
+        max-width: 900px;
+        padding: 12px 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+}
+
 /* Main title spans full width */
 .mainTitle {
     width: 100%;
@@ -245,9 +258,19 @@ body::after {
 }
 
 /* Mobile landscape: use more horizontal space */
-@media (max-width: 896px) and (orientation: landscape) {
+@media (max-width: 932px) and (orientation: landscape) {
     .timerDisplay {
-        font-size: clamp(2rem, 12vw, 7rem);
+        font-size: clamp(2.5rem, 10vw, 6rem);
+        letter-spacing: -0.02em;
+    }
+    
+    .mainTitle {
+        font-size: clamp(1rem, 2.5vw, 1.5rem);
+        text-align: center;
+    }
+    
+    .roundsDisplay {
+        font-size: clamp(1rem, 3vw, 1.5rem);
     }
 }
 
@@ -372,11 +395,26 @@ body {
 @media (max-width: 480px) {
     #buttonDisplay button {
         flex: 1 1 45%;
-        min-width: 70px;
+        min-width: 80px;
         max-width: 140px;
         font-size: clamp(0.75rem, 3.5vw, 1rem);
         padding: 8px 12px;
         margin: 2px;
+    }
+}
+
+/* Landscape: compact buttons in a single row */
+@media (max-width: 932px) and (orientation: landscape) {
+    #buttonDisplay {
+        gap: 8px;
+    }
+    
+    #buttonDisplay button {
+        flex: 0 1 auto;
+        min-width: auto;
+        font-size: clamp(0.8rem, 2vw, 1rem);
+        padding: 6px 14px;
+        margin: 0;
     }
 }
 

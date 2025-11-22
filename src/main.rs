@@ -325,13 +325,13 @@ impl Component for App {
                 <div id="buttonDisplay">
                     <button aria-label="Start" onclick={ start } id="startButton">{ "Start" }</button>
                     <button aria-label="Start" onclick={ stop } id="stopButton">{ "Pause" }</button>
-                    <button aria-label="Reset" onclick={ reset } id="resetButton">{ "Reset" }</button>
                     <button aria-label="Decrement Round" onclick={ on_subtract_round } id="decrementRoundButton">{ "-Round" }</button>
                     <button aria-label="Increment Round" onclick={ on_add_round } id="incrementRoundButton">{ "+Round" }</button>
                     <button aria-label="Decrement 15" onclick={ on_subtract_quarter } id="decrementQuarterButton">{ "-15" }</button>
                     <button aria-label="Increment 15" onclick={ on_add_quarter } id="incrementQuarterButton">{ "+15" }</button>
                     <button aria-label="Decrement Second" onclick={ on_subtract_second } id="decrementSecondButton">{ "-1" }</button>
                     <button aria-label="Increment Second" onclick={ on_add_second } id="incrementSecondButton">{ "+1" }</button>
+                    <button aria-label="Reset" onclick={ reset } id="resetButton">{ "Reset" }</button>
                 </div>
                 </div>
             </body>

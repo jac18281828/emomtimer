@@ -6,123 +6,72 @@
 
 [![EMOM Timer](timer.png)](http://emom-timer-us-east-2-504242000181.s3-website.us-east-2.amazonaws.com)
 
-# Customizable timer for your workout!
+**A high-performance EMOM (Every Minute On the Minute) workout timer with liquid glass aesthetics, built entirely in Rust and WebAssembly.**
 
-This is a customizable EMOM (Every Minute On the Minute) timer built with Rust and Yew, featuring a **drift-correcting countdown timer library** that can be reused in your own WebAssembly projects.
+🌐 **[Try it live →](http://emom-timer-us-east-2-504242000181.s3-website.us-east-2.amazonaws.com)**
 
-[Rust Doc](https://jac18281828.github.io/emomtimer/)
+�� **[Rust Documentation →](https://jac18281828.github.io/emomtimer/)**
 
 ## Features
 
-- 🎯 **EMOM Timer Web App**: Full-featured workout timer with visual cues
-- 📚 **Reusable Library**: Drift-correcting `CountdownTimer` for accurate timekeeping in WASM
-- ⚡ **Performance**: Uses recursive `Timeout` with wall clock sync to prevent drift
-- 🦀 **Pure Rust**: Built entirely in Rust, compiled to WebAssembly
+### 🎯 Full-Featured Workout Timer
+- **Precise EMOM timing** with visual and color cues
+- **Customizable rounds** and intervals
+- **Beautiful liquid glass UI** with animated wavy cloud effects
+- **Responsive design** optimized for all devices
+- **Zero drift** - maintains accuracy over long sessions
 
-## Using the CountdownTimer Library
+### 📚 Reusable Countdown Timer Library
+- **Drift-correcting algorithm** - syncs with wall clock to prevent timing errors
+- **Framework agnostic** - works with Yew, Leptos, Dioxus, or vanilla WASM
+- **Production-ready** - extensively tested with comprehensive test suite
+- **Easy to integrate** - simple API with sensible defaults
 
-The `emom` crate includes a reusable `CountdownTimer` that provides accurate timing in WebAssembly environments:
+## Why This Timer?
 
-```rust
-use emom::countdown_timer::{CountdownTimer, TimerConfig};
+Traditional JavaScript timers (`setInterval`, `setTimeout`) suffer from significant drift, especially in:
+- **Background tabs** where browsers throttle to 1Hz
+- **High CPU load** situations that delay callbacks
+- **Power-saving modes** that affect timing precision
 
-let config = TimerConfig::default(); // 100ms ticks
-let timer = CountdownTimer::new(config, |ticks| {
-    println!("Elapsed: {} tenths of a second", ticks);
-});
+The `emom` countdown timer solves these problems by:
+1. Using recursive `Timeout` calls for flexibility
+2. Tracking expected tick time against wall clock
+3. Periodically syncing and correcting drift
+4. Adjusting when drift exceeds configurable thresholds
 
-timer.start();
-```
+**Result**: Accurate timing that stays precise over minutes or hours, even under adverse conditions.
 
-See [LIBRARY_USAGE.md](LIBRARY_USAGE.md) for detailed examples and usage with Yew, Leptos, and other frameworks.
+## Quick Start
 
-### Why This Timer Library?
+### Use the Web App
 
-Unlike JavaScript's `setInterval`, this timer:
-- **Corrects for drift**: Syncs with wall clock to maintain accuracy
-- **Works in background tabs**: Adjusts when browser throttles timers
-- **Precise**: Maintains accuracy even under CPU load
+Visit the live deployment:
+**[http://emom-timer-us-east-2-504242000181.s3-website.us-east-2.amazonaws.com](http://emom-timer-us-east-2-504242000181.s3-website.us-east-2.amazonaws.com)**
+
+### Run Locally with Docker
+
+The easiest way to run locally is using the provided dev container:
+
+1. **Open in VS Code**: `Reopen in Container`
+2. **Build**: `trunk build --release`
+3. **Serve**: `trunk serve --address=0.0.0.0 --release`
+4. Open your browser to `http://localhost:8080`
+
+## Using the Countdown Timer Library
 
 Add to your `Cargo.toml`:
-```toml
-[dependencies]
-emom = "1.0"
-```
-
-# Introduction
-
-Yew is a modern Rust framework for creating multi-threaded front-end web apps using WebAssembly. It's comparable to JavaScript frameworks like React or Vue.js, but with the performance and safety benefits of Rust. Here are the key aspects of Yew:
-
-1. **WebAssembly**: Yew compiles to WebAssembly (Wasm), enabling web applications to run at near-native speed. This makes Yew a powerful choice for performance-critical web applications.
-
-2. **Component-Based**: Like React and Vue, Yew uses a component-based architecture. This makes it easier to build complex interfaces, as the UI is broken down into independent, reusable components.
-
-3. **Rust Programming Language**: Leveraging Rust's performance and safety features, Yew ensures memory safety and thread safety, minimizing common web development bugs like memory leaks.
-
-4. **Concurrent and Multi-Threaded**: Rust's support for concurrency and Yew's design allow for multi-threaded applications. This can lead to better performance, especially on modern multi-core processors.
-
-5. **JS Interoperability**: Yew can interoperate with JavaScript, allowing developers to use existing JavaScript libraries and frameworks alongside Yew.
-
-6. **Rich Tooling and Ecosystem**: Yew benefits from Rust's tooling, such as Cargo for package management, and an active community contributing to its ecosystem.
-
-7. **Virtual DOM**: Like React, Yew uses a virtual DOM to optimize rendering. It only updates the parts of the real DOM that have changed, leading to efficient rendering and improved performance.
-
-8. **Declarative UI**: Yew embraces a declarative approach to defining UI, which can make code more readable and easier to reason about compared to imperative UI coding.
-
-9. **Macro-based Syntax**: Yew uses Rust macros to provide a JSX-like syntax, making it familiar for developers coming from a React background.
-
-10. **Strong Type System**: Leveraging Rust’s strong type system, Yew applications benefit from compile-time error checking, which can catch errors early in the development process.
-
-Yew is particularly suited for applications where performance, reliability, and Rust's strong type system are important. However, it does require familiarity with Rust, and the ecosystem is not as mature as JavaScript's, which could be a consideration for some projects.
-
-### Quick Start
-
-#### VSCode
-
-`Reopen in container`
-
-#### Build Trunk
-
-```bash
-$  trunk build --release
-```
-
-#### Serve Trunk
-
-```bash
-$  trunk serve --address=0.0.0.0 --release
-```
-
-## Library
-
-# Using emom as a Reusable Timer Library
-
-The `emom` crate provides a drift-correcting countdown timer that works in WebAssembly environments. Unlike simple `Interval`-based timers, it actively corrects for browser timing drift to ensure accurate timing over long periods.
-
-## Features
-
-- **Drift Correction**: Automatically syncs with wall clock to prevent timing drift
-- **Configurable**: Adjust tick interval, sync frequency, and correction thresholds
-- **Framework Agnostic**: Works with Yew, Leptos, Dioxus, or vanilla WASM
-- **Accurate**: Maintains precision even in background tabs or under CPU load
-
-## Installation
-
 ```toml
 [dependencies]
 emom = { git = "https://github.com/jac18281828/emomtimer" }
 ```
 
-## Basic Usage
-
-### Simple Countdown
+### Basic Example
 
 ```rust
 use emom::countdown_timer::{CountdownTimer, TimerConfig};
 
-// Create a timer that ticks every 100ms
-let config = TimerConfig::default();
-
+let config = TimerConfig::default(); // 100ms ticks
 let timer = CountdownTimer::new(config, |ticks| {
     println!("Elapsed: {} tenths of a second", ticks);
 });
@@ -153,11 +102,12 @@ let timer = CountdownTimer::new(TimerConfig::default(), move |_ticks| {
 timer.start();
 ```
 
-### With Yew
+### Integration with Yew
 
 ```rust
 use yew::prelude::*;
 use emom::countdown_timer::{CountdownTimer, TimerConfig};
+use std::rc::Rc;
 
 #[function_component]
 fn TimerComponent() -> Html {
@@ -171,12 +121,12 @@ fn TimerComponent() -> Html {
     }, ());
     
     let start = {
-        let timer = timer.clone();
+        let timer = Rc::clone(&timer);
         Callback::from(move |_| timer.start())
     };
     
     let stop = {
-        let timer = timer.clone();
+        let timer = Rc::clone(&timer);
         Callback::from(move |_| timer.stop())
     };
     
@@ -190,7 +140,9 @@ fn TimerComponent() -> Html {
 }
 ```
 
-## Configuration
+### Configuration
+
+Customize the timer behavior:
 
 ```rust
 use emom::countdown_timer::TimerConfig;
@@ -202,23 +154,100 @@ let config = TimerConfig {
 };
 ```
 
-### Configuration Guidelines
+**Configuration Guidelines:**
+- `interval_ms`: Tick interval in milliseconds. Use 100 for tenths of seconds, 1000 for full seconds
+- `sync_interval_ticks`: How often to check for drift. Every 10 ticks (1 second) is recommended
+- `sync_threshold_ticks`: Minimum drift before correction. Set to 1 to prevent micro-corrections
 
-- **interval_ms**: The tick interval. 100ms is good for displaying tenths of seconds
-- **sync_interval_ticks**: How often to check for drift. Every 10 ticks (1 second) works well
-- **sync_threshold_ticks**: Minimum drift before correction. 1 tick prevents micro-corrections
+See [LIBRARY_USAGE.md](LIBRARY_USAGE.md) for detailed examples and advanced usage patterns.
 
-## Why This Approach?
+## Technology Stack
 
-JavaScript timers (`setTimeout`, `setInterval`) can drift significantly:
-- Background tabs may throttle timers to 1Hz
-- CPU load can delay callbacks
-- Browser power-saving features affect timing
+Built with modern Rust tooling and frameworks:
 
-This library solves these issues by:
-1. Using `Timeout` (setTimeout) for each tick
-2. Tracking expected tick time based on wall clock
-3. Periodically syncing actual ticks with wall clock time
-4. Correcting drift when it exceeds threshold
+- **[Rust](https://www.rust-lang.org/)** - Systems programming language ensuring memory safety and performance
+- **[Yew](https://yew.rs/)** - Modern Rust framework for building WebAssembly web applications
+- **[WebAssembly](https://webassembly.org/)** - Near-native performance in the browser
+- **[Trunk](https://trunkrs.dev/)** - WASM web application bundler
+- **[gloo-timers](https://docs.rs/gloo-timers/)** - Thin Rust wrapper over browser timing APIs
 
-This ensures your timer stays accurate even in challenging conditions.
+### Why Yew and WebAssembly?
+
+**Yew** is a modern Rust framework comparable to React or Vue.js, but with unique advantages:
+
+1. **WebAssembly Performance**: Compiles to WASM for near-native execution speed
+2. **Component-Based Architecture**: Build complex UIs with reusable, isolated components
+3. **Memory Safety**: Leverage Rust's guarantees to eliminate memory leaks and data races
+4. **Strong Type System**: Catch errors at compile time, not runtime
+5. **Virtual DOM**: Efficient rendering with minimal DOM updates
+6. **Declarative UI**: Clear, readable code with macro-based JSX-like syntax
+7. **JavaScript Interoperability**: Use existing JS libraries when needed
+8. **Rich Tooling**: Cargo for package management, excellent IDE support
+
+**Perfect for**: Applications where performance, reliability, and type safety are critical.
+
+## Development
+
+### Prerequisites
+- Docker (for dev container)
+- OR: Rust 1.70+, trunk, wasm-bindgen
+
+### Building
+
+```bash
+# Development build
+trunk build
+
+# Release build with optimizations
+trunk build --release
+```
+
+### Testing
+
+```bash
+# Run all tests
+cargo test
+
+# Run with coverage
+cargo test --all-features
+
+# Lint and format
+cargo fmt --check
+cargo clippy --all-features --no-deps -- -D warnings
+```
+
+### Project Structure
+
+```
+emomtimer/
+├── src/
+│   ├── lib.rs              # Library exports and countdown timer
+│   ├── main.rs             # Yew application and UI
+│   └── countdown_timer.rs  # Drift-correcting timer implementation
+├── style.css               # Liquid glass UI styling
+├── index.html              # Application shell
+├── Cargo.toml              # Dependencies and package metadata
+└── README.md               # This file
+```
+
+## Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes with tests
+4. Ensure `cargo test` and `cargo clippy` pass
+5. Submit a pull request
+
+## License
+
+This project is open source. See the repository for license details.
+
+## Acknowledgments
+
+Built with ❤️ using Rust and WebAssembly. Special thanks to the Yew and Rust communities for excellent tooling and documentation.
+
+---
+
+**[Live Demo](http://emom-timer-us-east-2-504242000181.s3-website.us-east-2.amazonaws.com)** | **[Documentation](https://jac18281828.github.io/emomtimer/)** | **[Issues](https://github.com/jac18281828/emomtimer/issues)**

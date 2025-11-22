@@ -15,6 +15,28 @@ body {
     overflow: hidden;
 }
 
+/* Mobile: less padding to maximize screen space */
+@media (max-width: 768px) {
+    body {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+        align-items: flex-start;
+        padding-top: max(10px, env(safe-area-inset-top));
+    }
+}
+
+@media (max-width: 480px) and (orientation: landscape) {
+    body {
+        padding: 8px;
+        align-items: center;
+    }
+}
+
 /* Wavy cloud layers for glass to obscure */
 body::before,
 body::after {
@@ -28,6 +50,14 @@ body::after {
     pointer-events: none;
     mask-image: radial-gradient(ellipse 100% 100% at center, black 40%, transparent 100%);
     -webkit-mask-image: radial-gradient(ellipse 100% 100% at center, black 40%, transparent 100%);
+}
+
+/* Mobile: reduce cloud visibility for better content clarity */
+@media (max-width: 480px) {
+    body::before,
+    body::after {
+        opacity: 0.6;
+    }
 }
 
 body::before {
@@ -99,11 +129,35 @@ body::after {
     z-index: 1;
 }
 
+/* Mobile-specific adjustments for iPhone */
+@media (max-width: 768px) {
+    #background {
+        width: 95%;
+        padding: 20px;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    #background {
+        width: 98%;
+        padding: 16px;
+    }
+}
+
 /* Main title spans full width */
 .mainTitle {
     width: 100%;
     text-align: left;
     font-size: clamp(1rem, 2vw, 2rem); /* Responsive font size */
+}
+
+/* Mobile portrait: smaller title */
+@media (max-width: 480px) and (orientation: portrait) {
+    .mainTitle {
+        font-size: clamp(1.25rem, 5vw, 1.75rem);
+        text-align: center;
+    }
 }
 
 /* Rounds display spans full width */
@@ -115,12 +169,41 @@ body::after {
     font-size: clamp(1rem, 4vw, 2rem);
 }
 
+/* Mobile portrait: smaller rounds display */
+@media (max-width: 480px) and (orientation: portrait) {
+    .roundsDisplay {
+        font-size: clamp(1.25rem, 6vw, 1.75rem);
+        justify-content: center;
+    }
+}
+
 /* Timer display adjusts with viewport */
 .timerDisplay {
     width: 100%;
     font-size: clamp(2rem, 25vw, 12rem); /* Responsive font size */
     text-align: center;
     font-variant-numeric: tabular-nums; /* Fixed-width digits prevent layout shift */
+    white-space: nowrap; /* Prevent wrapping */
+    overflow: visible; /* Allow overflow rather than wrap */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+/* Mobile portrait: smaller timer that fits on one line */
+@media (max-width: 480px) and (orientation: portrait) {
+    .timerDisplay {
+        font-size: clamp(2.5rem, 16vw, 5rem);
+        letter-spacing: -0.03em; /* Tighter spacing on mobile */
+    }
+}
+
+/* Mobile landscape: use more horizontal space */
+@media (max-width: 896px) and (orientation: landscape) {
+    .timerDisplay {
+        font-size: clamp(2rem, 12vw, 7rem);
+    }
 }
 
 /* Individual digit styling */
@@ -211,6 +294,18 @@ body {
         inset 0 0 10px rgba(255, 255, 255, 0.2);
     transition: all 0.2s ease;
     cursor: pointer;
+}
+
+/* Mobile: smaller buttons that fit better */
+@media (max-width: 480px) {
+    #buttonDisplay button {
+        flex: 1 1 45%;
+        min-width: 70px;
+        max-width: 140px;
+        font-size: clamp(0.75rem, 3.5vw, 1rem);
+        padding: 8px 12px;
+        margin: 2px;
+    }
 }
 
 #buttonDisplay button:hover {

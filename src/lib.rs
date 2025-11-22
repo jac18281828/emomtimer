@@ -1,3 +1,4 @@
+pub mod countdown_timer;
 pub mod emomtimer {
     pub enum Msg {
         Start,
@@ -14,7 +15,7 @@ pub mod emomtimer {
 
     pub const DEFAULT_MINUTES: usize = 1;
     pub const DEFAULT_SECONDS: usize = 0;
-    pub const DEFAULT_ROUNDS: usize = 10;
+    pub const DEFAULT_ROUNDS: usize = 5;
 
     #[derive(Debug, Clone, Copy, PartialEq)]
     pub struct Time {

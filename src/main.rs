@@ -1,6 +1,6 @@
-use gloo_timers::callback::Timeout;
-use js_sys::Date;
+use emom::countdown_timer::{CountdownTimer, TimerConfig};
 use log::{debug, info};
+use std::rc::Rc;
 use yew::{Component, Context, Html, html};
 
 use emom::emomtimer::{DEFAULT_MINUTES, DEFAULT_ROUNDS, DEFAULT_SECONDS, Msg, Time, Timer};
@@ -18,14 +18,15 @@ pub struct App {
     round_time: Time,
     timer: Timer,
     blink_state: BlinkState,
-    timeout_handle: Option<Timeout>,
-    next_tick_time: f64,
-    round_start_time: f64,
+    countdown_timer: Option<Rc<CountdownTimer<Box<dyn Fn(usize) + 'static>>>>,
 }
 
 impl App {
     fn start(&mut self, ctx: &Context<Self>) {
-        self.cancel(); // Cancel any existing timeout
+        if self.timer.running {
+            return;
+        }
+
         if self.timer.current_round >= self.timer.rounds {
             self.timer.current_round = 1;
         }
@@ -44,80 +45,40 @@ impl App {
             self.timer.current_time.tenths = 9;
         }
 
-        let start_time = Date::now();
-        self.next_tick_time = start_time + 100.0; // Schedule first tick after 100ms
-        self.round_start_time = start_time;
         self.timer.running = true;
-        self.schedule_tick(ctx);
-    }
 
-    fn schedule_tick(&mut self, ctx: &Context<Self>) {
-        let now = Date::now();
-        let delay = self.next_tick_time - now;
-        let delay = delay.max(0.0).round() as u32;
-
+        // Create countdown timer with callback
         let link = ctx.link().clone();
-        if self.timer.running {
-            let handle = Timeout::new(delay, move || {
+        let config = TimerConfig::default();
+        let countdown_timer: Rc<CountdownTimer<Box<dyn Fn(usize) + 'static>>> = CountdownTimer::new(
+            config,
+            Box::new(move |_ticks| {
                 link.send_message(Msg::Tick);
-            });
-            self.timeout_handle = Some(handle);
-        } else {
-            self.timeout_handle = None;
-        }
+            }) as Box<dyn Fn(usize) + 'static>,
+        );
+
+        countdown_timer.start();
+        self.countdown_timer = Some(countdown_timer);
     }
 
-    fn tick(&mut self, ctx: &Context<Self>) {
+    fn tick(&mut self, _ctx: &Context<Self>) {
         // Ignore ticks if timer is not running (prevents race conditions with old timeouts)
         if !self.timer.running {
             info!("Ignoring tick - timer not running");
             return;
         }
 
-        let now = Date::now();
-
-        // Log tick for debugging
-        let delay_error = now - (self.next_tick_time - 100.0);
         debug!(
-            "Tick: round {}/{}, time {}:{}.{}, delay_error: {:.1}ms, next_tick: {:.1}ms",
+            "Tick: round {}/{}, time {}:{}.{}",
             self.timer.current_round,
             self.timer.rounds,
             self.timer.current_time.minutes,
             self.timer.current_time.seconds,
             self.timer.current_time.tenths,
-            delay_error,
-            self.next_tick_time - now
         );
-
-        // Update next tick time
-        self.next_tick_time += 100.0;
 
         // Perform smooth tick countdown
         self.timer.current_time.tick(self.max_seconds());
-
-        // Every 10 ticks (1 second), sync with wall clock to prevent drift
-        if self.timer.current_time.tenths == 0 {
-            let elapsed_ms = now - self.round_start_time;
-            let elapsed_tenths = (elapsed_ms / 100.0).floor() as usize;
-            let max_tenths = self.max_tenths();
-
-            if elapsed_tenths <= max_tenths {
-                let target_tenths = max_tenths - elapsed_tenths;
-                let target_seconds = (target_tenths / 10) % 60;
-                let target_minutes = target_tenths / 600;
-
-                // Only sync if we're off by more than 1 tenth
-                let current_total_tenths = self.timer.current_time.minutes * 600
-                    + self.timer.current_time.seconds * 10
-                    + self.timer.current_time.tenths;
-
-                if current_total_tenths.abs_diff(target_tenths) > 1 {
-                    self.timer.current_time.seconds = target_seconds;
-                    self.timer.current_time.minutes = target_minutes;
-                    self.timer.current_time.tenths = target_tenths % 10;
-                }
-            }
-        }
 
         // Handle end of round
         if self.timer.current_time.is_zero() {
@@ -125,9 +86,6 @@ impl App {
         } else {
             self.update_blink_state();
         }
-
-        // Schedule the next tick
-        self.schedule_tick(ctx);
     }
 
     fn tick_update_end_of_round(&mut self) {
@@ -153,23 +111,22 @@ impl App {
                     self.timer.current_time.tenths = 9;
                 }
             }
-            self.round_start_time = Date::now(); // Reset clock sync for new round
             self.timer.current_round += 1;
             self.blink_state = BlinkState::None;
         }
     }
 
     fn cancel(&mut self) {
-        if let Some(handle) = self.timeout_handle.take() {
-            handle.cancel();
+        if let Some(timer) = self.countdown_timer.take() {
+            timer.stop();
         }
         self.timer.running = false;
         self.blink_state = BlinkState::None;
     }
 
     fn reset(&mut self) {
-        if let Some(handle) = self.timeout_handle.take() {
-            handle.cancel();
+        if let Some(timer) = self.countdown_timer.take() {
+            timer.stop();
         }
         self.round_time.reset();
         self.timer.reset();
@@ -187,10 +144,6 @@ impl App {
         } else {
             self.round_time.seconds.max(1)
         }
-    }
-
-    fn max_tenths(&self) -> usize {
-        self.round_time.minutes * 600 + self.round_time.seconds * 10
     }
 
     fn clear_blink_state(&mut self) {
@@ -253,16 +206,14 @@ impl Component for App {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         }
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Start => {
-                if self.timeout_handle.is_none() {
+                if self.countdown_timer.is_none() {
                     self.start(ctx);
                 }
                 true
@@ -409,9 +360,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         assert_eq!(app.max_seconds(), 60);
     }
@@ -435,9 +384,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         assert_eq!(app.max_seconds(), 1);
     }
@@ -461,9 +408,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         assert_eq!(app.max_seconds(), 1);
     }
@@ -487,9 +432,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         assert_eq!(app.max_seconds(), 60);
     }
@@ -513,9 +456,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         assert_eq!(app.max_seconds(), 60);
     }
@@ -539,9 +480,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         assert_eq!(app.max_seconds(), 60);
     }
@@ -565,9 +504,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         assert_eq!(app.max_seconds(), 60);
     }
@@ -591,9 +528,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         assert_eq!(app.max_seconds(), 60);
     }
@@ -617,9 +552,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::Red);
@@ -644,9 +577,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::Red);
@@ -671,9 +602,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::None);
@@ -698,9 +627,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::Red);
@@ -725,9 +652,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::None);
@@ -752,9 +677,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::None);
@@ -779,9 +702,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::Green);
@@ -806,9 +727,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::Green);
@@ -833,9 +752,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::None);
@@ -860,9 +777,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::None);
@@ -887,9 +802,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::Red,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         app.clear_blink_state();
         assert_eq!(app.blink_state, BlinkState::None);
@@ -914,9 +827,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::None);
@@ -941,9 +852,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::Green);
@@ -968,9 +877,7 @@ mod tests {
                 running: false,
             },
             blink_state: BlinkState::None,
-            timeout_handle: None,
-            next_tick_time: 0.0,
-            round_start_time: 0.0,
+            countdown_timer: None,
         };
         app.update_blink_state();
         assert_eq!(app.blink_state, BlinkState::Red);

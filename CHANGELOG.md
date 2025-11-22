@@ -1,3 +1,7 @@
+# 1.0.19 (2025-11-22)
+
+* counting tick smoothness
+
 # 1.0.18 (2025-11-20)
 
 * tick improvements

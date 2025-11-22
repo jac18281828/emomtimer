@@ -3,5 +3,41 @@
     <head>
         <link data-trunk rel="css" href="style.css">    
     </head>
-    <body></body>
+    <body>
+        <!-- SVG filter for liquid distortion effect -->
+        <svg width="0" height="0" style="position: absolute;">
+            <defs>
+                <filter id="liquid-distortion">
+                    <!-- Turbulence creates the organic liquid noise -->
+                    <feTurbulence 
+                        type="fractalNoise" 
+                        baseFrequency="0.01 0.02" 
+                        numOctaves="3" 
+                        result="turbulence"
+                        seed="2">
+                        <animate 
+                            attributeName="baseFrequency" 
+                            dur="20s" 
+                            values="0.01 0.02;0.02 0.01;0.01 0.02" 
+                            repeatCount="indefinite"/>
+                    </feTurbulence>
+                    
+                    <!-- Displacement map creates the liquid distortion -->
+                    <feDisplacementMap 
+                        in="SourceGraphic" 
+                        in2="turbulence" 
+                        scale="5" 
+                        xChannelSelector="R" 
+                        yChannelSelector="G"
+                        result="displacement"/>
+                    
+                    <!-- Subtle blur to smooth the effect -->
+                    <feGaussianBlur in="displacement" stdDeviation="0.5" result="blur"/>
+                    
+                    <!-- Blend original with distorted for subtle effect -->
+                    <feBlend in="SourceGraphic" in2="blur" mode="normal"/>
+                </filter>
+            </defs>
+        </svg>
+    </body>
 </html>

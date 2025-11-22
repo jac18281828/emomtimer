@@ -1,3 +1,11 @@
+# 1.1.1 (2025-11-22)
+
+* liquid glass display
+
+# 1.1.0 (2025-11-22)
+
+* redesign
+
 # 1.0.19 (2025-11-22)
 
 * counting tick smoothness

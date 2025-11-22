@@ -1,7 +1,102 @@
-/* Background div fills the viewport */
-#background {
+/* Animated liquid background */
+body {
+    transition: color 0.3s ease-out;
+    margin: 0;
+    padding: 40px;
+    min-height: 100vh;
+    box-sizing: border-box;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    background-size: 400% 400%;
+    animation: gradient-shift 15s ease infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Wavy cloud layers for glass to obscure */
+body::before,
+body::after {
+    content: '';
+    position: absolute;
     width: 100%;
     height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    pointer-events: none;
+    mask-image: radial-gradient(ellipse 100% 100% at center, black 40%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 100% 100% at center, black 40%, transparent 100%);
+}
+
+body::before {
+    background: 
+        radial-gradient(ellipse 1400px 200px at 20% 30%, rgba(255, 255, 255, 0.58) 0%, rgba(255, 255, 255, 0.27) 40%, transparent 70%),
+        radial-gradient(ellipse 1200px 180px at 80% 20%, rgba(255, 255, 255, 0.53) 0%, rgba(255, 255, 255, 0.22) 40%, transparent 70%),
+        radial-gradient(ellipse 1600px 220px at 40% 70%, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0.32) 40%, transparent 70%);
+    animation: clouds-drift-1 30s ease-in-out infinite;
+    filter: blur(30px);
+}
+
+body::after {
+    background: 
+        radial-gradient(ellipse 1500px 190px at 60% 40%, rgba(255, 255, 255, 0.56) 0%, rgba(255, 255, 255, 0.25) 40%, transparent 70%),
+        radial-gradient(ellipse 1300px 210px at 30% 80%, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.3) 40%, transparent 70%),
+        radial-gradient(ellipse 1800px 240px at 90% 70%, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.21) 40%, transparent 70%);
+    animation: clouds-drift-2 40s ease-in-out infinite reverse;
+    filter: blur(35px);
+}
+
+@keyframes clouds-drift-1 {
+    0%, 100% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+    33% {
+        transform: translate(-2%, 1%) rotate(0.5deg);
+    }
+    66% {
+        transform: translate(1%, -2%) rotate(-0.3deg);
+    }
+}
+
+@keyframes clouds-drift-2 {
+    0%, 100% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+    50% {
+        transform: translate(1.5%, 1.5%) rotate(-0.8deg);
+    }
+}
+
+/* Animated gradient background */
+@keyframes gradient-shift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Floating liquid glass card */
+#background {
+    max-width: 1200px;
+    width: 90%;
+    padding: 40px;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 
+        0 8px 32px 0 rgba(31, 38, 135, 0.37),
+        inset 0 0 20px rgba(255, 255, 255, 0.1);
+    position: relative;
+    z-index: 1;
 }
 
 /* Main title spans full width */
@@ -42,7 +137,7 @@
 
 /* Continuous subtle pulse animation for tenths digit */
 .digit-tenths {
-    animation: tenths-pulse 0.1s ease-in-out infinite;
+    animation: tenths-pulse 0.25s ease-in-out infinite;
 }
 
 @keyframes tenths-pulse {
@@ -51,7 +146,7 @@
         opacity: 1;
     }
     50% {
-        transform: scale(1.05);
+        transform: scale(1.02);
         opacity: 0.95;
     }
 }
@@ -60,6 +155,10 @@
 body {
     transition: color 0.3s ease-out;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    box-sizing: border-box;
 }
 
 /* Add a subtle glow effect to the timer display */
@@ -98,6 +197,33 @@ body {
     min-width: 90px;   /* Optional: prevent buttons from becoming too small */
     max-width: 110px;  /* Optional: prevent buttons from becoming too large */
     font-size: clamp(0.875rem, 1.5vw, 1.5rem); /* Responsive font size */
-    background-color: #c4ffc6;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
+    
+    /* Glass effect for buttons */
+    background: rgba(196, 255, 198, 0.3);
+    backdrop-filter: blur(10px) saturate(150%);
+    -webkit-backdrop-filter: blur(10px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 8px;
+    padding: 10px 16px;
+    box-shadow: 
+        0 4px 16px 0 rgba(31, 38, 135, 0.2),
+        inset 0 0 10px rgba(255, 255, 255, 0.2);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+#buttonDisplay button:hover {
+    background: rgba(196, 255, 198, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 
+        0 6px 20px 0 rgba(31, 38, 135, 0.3),
+        inset 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+#buttonDisplay button:active {
+    transform: translateY(0);
+    box-shadow: 
+        0 2px 8px 0 rgba(31, 38, 135, 0.2),
+        inset 0 0 8px rgba(255, 255, 255, 0.15);
 }

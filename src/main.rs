@@ -309,7 +309,7 @@ impl Component for App {
             } >
                 <div id="background">
                     <div class="mainTitle">
-                        <h3>{ "EMOM Timer" }</h3>
+                        <h3>{ "EMOM" }</h3>
                     </div>
                 <div class="roundsDisplay" id="roundsDisplay">
                     <span>{ format!("{}/{}", state.current_round, state.rounds) }</span>
@@ -333,7 +333,6 @@ impl Component for App {
                     <button aria-label="Decrement Second" onclick={ on_subtract_second } id="decrementSecondButton">{ "-1" }</button>
                     <button aria-label="Increment Second" onclick={ on_add_second } id="incrementSecondButton">{ "+1" }</button>
                 </div>
-                <h5><a href="https://github.com/jac18281828/emomtimer">{ "GitHub" }</a></h5>
                 </div>
             </body>
             </html>

@@ -7,6 +7,9 @@ use emom::emomtimer::{DEFAULT_MINUTES, DEFAULT_ROUNDS, DEFAULT_SECONDS, Msg, Tim
 
 const BLINKED_COUNT: usize = 3;
 
+// Type alias to simplify complex timer type
+type TimerCallback = Rc<CountdownTimer<Box<dyn Fn(usize) + 'static>>>;
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum BlinkState {
     Red,
@@ -18,7 +21,7 @@ pub struct App {
     round_time: Time,
     timer: Timer,
     blink_state: BlinkState,
-    countdown_timer: Option<Rc<CountdownTimer<Box<dyn Fn(usize) + 'static>>>>,
+    countdown_timer: Option<TimerCallback>,
 }
 
 impl App {
@@ -50,7 +53,7 @@ impl App {
         // Create countdown timer with callback
         let link = ctx.link().clone();
         let config = TimerConfig::default();
-        let countdown_timer: Rc<CountdownTimer<Box<dyn Fn(usize) + 'static>>> = CountdownTimer::new(
+        let countdown_timer: TimerCallback = CountdownTimer::new(
             config,
             Box::new(move |_ticks| {
                 link.send_message(Msg::Tick);
@@ -309,7 +312,7 @@ impl Component for App {
                     <span>{ format!("{}/{}", state.current_round, state.rounds) }</span>
                     <span class="roundTime">{ format!("{}:{:02}", self.round_time.minutes, self.round_time.seconds) }</span>
                 </div>
-                <div class={classes!("timerDisplay", (!state.running).then(|| "timer-idle"))} id="timerDisplay">
+                <div class={classes!("timerDisplay", (!state.running).then_some("timer-idle"))} id="timerDisplay">
                     <span class="digit">{ state.current_time.minutes }</span>
                     <span class="separator">{ ":" }</span>
                     <span class="digit">{ format!("{:02}", state.current_time.seconds) }</span>

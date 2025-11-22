@@ -1,6 +1,6 @@
 use gloo_timers::callback::Timeout;
 use js_sys::Date;
-use log::info;
+use log::{debug, info};
 use yew::{Component, Context, Html, html};
 
 use emom::emomtimer::{DEFAULT_MINUTES, DEFAULT_ROUNDS, DEFAULT_SECONDS, Msg, Time, Timer};
@@ -29,6 +29,21 @@ impl App {
         if self.timer.current_round >= self.timer.rounds {
             self.timer.current_round = 1;
         }
+
+        // Adjust display to one tick before configured time when starting
+        // This ensures we count from 59.9 -> 0.0 for a 60 second timer
+        self.timer.current_time = self.round_time;
+        if self.timer.current_time.tenths > 0 {
+            self.timer.current_time.tenths -= 1;
+        } else if self.timer.current_time.seconds > 0 {
+            self.timer.current_time.seconds -= 1;
+            self.timer.current_time.tenths = 9;
+        } else if self.timer.current_time.minutes > 0 {
+            self.timer.current_time.minutes -= 1;
+            self.timer.current_time.seconds = 59;
+            self.timer.current_time.tenths = 9;
+        }
+
         let start_time = Date::now();
         self.next_tick_time = start_time + 100.0; // Schedule first tick after 100ms
         self.round_start_time = start_time;
@@ -53,7 +68,26 @@ impl App {
     }
 
     fn tick(&mut self, ctx: &Context<Self>) {
+        // Ignore ticks if timer is not running (prevents race conditions with old timeouts)
+        if !self.timer.running {
+            info!("Ignoring tick - timer not running");
+            return;
+        }
+
         let now = Date::now();
+
+        // Log tick for debugging
+        let delay_error = now - (self.next_tick_time - 100.0);
+        debug!(
+            "Tick: round {}/{}, time {}:{}.{}, delay_error: {:.1}ms, next_tick: {:.1}ms",
+            self.timer.current_round,
+            self.timer.rounds,
+            self.timer.current_time.minutes,
+            self.timer.current_time.seconds,
+            self.timer.current_time.tenths,
+            delay_error,
+            self.next_tick_time - now
+        );
 
         // Update next tick time
         self.next_tick_time += 100.0;
@@ -98,14 +132,28 @@ impl App {
 
     fn tick_update_end_of_round(&mut self) {
         info!("end of round");
-        self.timer.current_time = self.round_time;
-        self.round_start_time = Date::now(); // Reset clock sync for new round
 
         if self.timer.current_round >= self.timer.rounds {
+            // Last round - reset to full configured time
             info!("end of timer");
+            self.timer.current_time = self.round_time;
             self.blink_state = BlinkState::None;
             self.cancel();
         } else {
+            // Not the last round - start next round at one tick before configured time
+            self.timer.current_time = self.round_time;
+            if self.timer.current_time.tenths > 0 {
+                self.timer.current_time.tenths -= 1;
+            } else {
+                // If tenths is 0, we need to borrow from seconds
+                self.timer
+                    .current_time
+                    .decrement_seconds(self.max_seconds());
+                if !self.timer.current_time.is_zero() {
+                    self.timer.current_time.tenths = 9;
+                }
+            }
+            self.round_start_time = Date::now(); // Reset clock sync for new round
             self.timer.current_round += 1;
             self.blink_state = BlinkState::None;
         }
@@ -154,6 +202,16 @@ impl App {
         let round_seconds = self.round_time.total_seconds();
         let tenths = self.timer.current_time.tenths;
 
+        // Only blink if round is long enough
+        // Otherwise the blinking is too constant and distracting
+        // this actually blinks 3 times starting
+        // 3 times ending - so you need at least 7 seconds to
+        // see all the blinking
+        if round_seconds <= 2 * BLINKED_COUNT + 1 {
+            self.blink_state = BlinkState::None;
+            return;
+        }
+
         // Blink green at 1, 2, and 3 second marks after round starts
         // Only after round 1 has started
         // E.g., for 60 seconds: blink at 59, 58, 57 (when 1, 2, 3 seconds have elapsed)
@@ -165,7 +223,7 @@ impl App {
         {
             self.blink_state = BlinkState::Green;
         }
-        // Blink red at the end of the minute (last 3 seconds)
+        // Blink red at the end of the round (last 3 seconds)
         // Blink for 0.5 seconds (tenths 0-4) at seconds 3, 2, 1
         else if total_seconds > 0 && total_seconds <= BLINKED_COUNT && tenths <= 4 {
             self.blink_state = BlinkState::Red;
@@ -236,7 +294,7 @@ impl Component for App {
             Msg::IncrementSecond => {
                 info!("incrementing seconds");
                 self.round_time.increment_seconds();
-                self.timer.current_time.increment_seconds();
+                self.timer.current_time = self.round_time;
                 self.clear_blink_state();
                 true
             }
@@ -244,21 +302,21 @@ impl Component for App {
                 info!("decrementing seconds");
                 let max_seconds = self.max_seconds();
                 self.round_time.decrement_seconds(max_seconds);
-                self.timer.current_time.decrement_seconds(max_seconds);
+                self.timer.current_time = self.round_time;
                 self.clear_blink_state();
                 true
             }
             Msg::IncrementQuarter => {
                 info!("incrementing 15");
                 self.round_time.increment_quarter();
-                self.timer.current_time.increment_quarter();
+                self.timer.current_time = self.round_time;
                 self.clear_blink_state();
                 true
             }
             Msg::DecrementQuarter => {
                 info!("decrementing 15");
                 self.round_time.decrement_quarter();
-                self.timer.current_time.decrement_quarter();
+                self.timer.current_time = self.round_time;
                 self.clear_blink_state();
                 true
             }

@@ -25,6 +25,62 @@
     width: 100%;
     font-size: clamp(2rem, 25vw, 12rem); /* Responsive font size */
     text-align: center;
+    font-variant-numeric: tabular-nums; /* Fixed-width digits prevent layout shift */
+}
+
+/* Individual digit styling */
+.digit {
+    display: inline-block;
+    will-change: transform;
+}
+
+/* Separator styling (colon and period) */
+.separator {
+    display: inline-block;
+    opacity: 0.8;
+}
+
+/* Continuous subtle pulse animation for tenths digit */
+.digit-tenths {
+    animation: tenths-pulse 0.1s ease-in-out infinite;
+}
+
+@keyframes tenths-pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.95;
+    }
+}
+
+/* Smooth color transitions for blink states */
+body {
+    transition: color 0.3s ease-out;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Add a subtle glow effect to the timer display */
+.timerDisplay {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3),
+                 0 0 40px rgba(255, 255, 255, 0.2);
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+/* Pulse the entire timer display slightly - only when idle */
+@keyframes timer-breathe {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.01);
+    }
+}
+
+.timerDisplay.timer-idle {
+    animation: timer-breathe 4s ease-in-out infinite;
 }
 
 /* Button container uses Flexbox */

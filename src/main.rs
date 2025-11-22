@@ -1,7 +1,7 @@
 use emom::countdown_timer::{CountdownTimer, TimerConfig};
 use log::{debug, info};
 use std::rc::Rc;
-use yew::{Component, Context, Html, html};
+use yew::{Component, Context, Html, classes, html};
 
 use emom::emomtimer::{DEFAULT_MINUTES, DEFAULT_ROUNDS, DEFAULT_SECONDS, Msg, Time, Timer};
 
@@ -309,8 +309,12 @@ impl Component for App {
                     <span>{ format!("{}/{}", state.current_round, state.rounds) }</span>
                     <span class="roundTime">{ format!("{}:{:02}", self.round_time.minutes, self.round_time.seconds) }</span>
                 </div>
-                <div class="timerDisplay" id="timerDisplay">
-                    { format!("{}:{:02}.{}", state.current_time.minutes, state.current_time.seconds, state.current_time.tenths) }
+                <div class={classes!("timerDisplay", (!state.running).then(|| "timer-idle"))} id="timerDisplay">
+                    <span class="digit">{ state.current_time.minutes }</span>
+                    <span class="separator">{ ":" }</span>
+                    <span class="digit">{ format!("{:02}", state.current_time.seconds) }</span>
+                    <span class="separator">{ "." }</span>
+                    <span class="digit digit-tenths">{ state.current_time.tenths }</span>
                 </div>
                 <div id="buttonDisplay">
                     <button aria-label="Start" onclick={ start } id="startButton">{ "Start" }</button>

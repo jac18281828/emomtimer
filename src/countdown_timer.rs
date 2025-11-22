@@ -133,7 +133,10 @@ where
             state.ticks_elapsed += 1;
             state.next_tick_time += config.interval_ms as f64;
 
-            if state.ticks_elapsed % config.sync_interval_ticks == 0 {
+            if state
+                .ticks_elapsed
+                .is_multiple_of(config.sync_interval_ticks)
+            {
                 let elapsed_ms = now - state.start_time;
                 let expected_ticks = (elapsed_ms / config.interval_ms as f64).floor() as usize;
                 let tick_diff = expected_ticks.abs_diff(state.ticks_elapsed);

@@ -2,8 +2,9 @@
 body {
     transition: color 0.3s ease-out;
     margin: 0;
-    padding: 40px;
+    padding: 2vmin;
     min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
     box-sizing: border-box;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
     background-size: 400% 400%;
@@ -12,29 +13,30 @@ body {
     align-items: center;
     justify-content: center;
     position: relative;
-    overflow: hidden;
+    overflow: auto;
 }
 
 /* Mobile: less padding to maximize screen space */
 @media (max-width: 768px) {
     body {
-        padding: 20px;
+        padding: 1.5vmin;
     }
 }
 
 @media (max-width: 480px) {
     body {
-        padding: 10px;
+        padding: 1vmin;
         align-items: flex-start;
-        padding-top: max(10px, env(safe-area-inset-top));
+        padding-top: max(1vmin, env(safe-area-inset-top));
     }
 }
 
 /* Landscape: wider layout, less vertical padding */
-@media (max-width: 932px) and (orientation: landscape) {
+@media (orientation: landscape) {
     body {
-        padding: 8px 20px;
+        padding: 1vh 2vw;
         align-items: center;
+        overflow: auto;
     }
 }
 
@@ -115,13 +117,14 @@ body::after {
 
 /* Floating liquid glass card */
 #background {
-    max-width: 1200px;
+    max-width: min(1200px, 95vw);
     width: 90%;
-    padding: 40px;
+    min-height: min(600px, 75vh);
+    padding: clamp(16px, 3vmin, 40px);
     background: rgba(255, 255, 255, 0.12);
     backdrop-filter: blur(30px) saturate(180%);
     -webkit-backdrop-filter: blur(30px) saturate(180%);
-    border-radius: 24px;
+    border-radius: clamp(12px, 2vmin, 24px);
     border: 1px solid rgba(255, 255, 255, 0.25);
     box-shadow: 
         0 8px 32px 0 rgba(31, 38, 135, 0.37),
@@ -130,6 +133,10 @@ body::after {
     position: relative;
     z-index: 1;
     overflow: hidden;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
 }
 
 /* Mottled glass texture overlay */
@@ -169,8 +176,9 @@ body::after {
 /* Mobile-specific adjustments for iPhone */
 @media (max-width: 768px) {
     #background {
-        width: 95%;
-        padding: 20px;
+        width: 96%;
+        min-height: min(550px, 70vh);
+        padding: clamp(12px, 2.5vmin, 20px);
         max-width: 100%;
     }
 }
@@ -178,16 +186,17 @@ body::after {
 @media (max-width: 480px) {
     #background {
         width: 98%;
-        padding: 16px;
+        min-height: min(500px, 65vh);
+        padding: clamp(10px, 2vmin, 16px);
     }
 }
 
 /* Landscape: wider, more compact */
-@media (max-width: 932px) and (orientation: landscape) {
+@media (orientation: landscape) {
     #background {
-        width: 95%;
-        max-width: 900px;
-        padding: 12px 24px;
+        width: 98%;
+        max-width: 95vw;
+        padding: clamp(6px, 1vh, 12px) clamp(12px, 2vw, 24px);
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -198,7 +207,7 @@ body::after {
 .mainTitle {
     width: 100%;
     text-align: left;
-    font-size: clamp(1rem, 2vw, 2rem); /* Responsive font size */
+    font-size: clamp(1.25rem, 2.5vw, 2.5rem); /* Responsive font size */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     font-weight: 500;
     letter-spacing: -0.02em;
@@ -210,10 +219,10 @@ body::after {
     padding: 0;
 }
 
-/* Mobile portrait: smaller title */
+/* Mobile portrait: larger title */
 @media (max-width: 480px) and (orientation: portrait) {
     .mainTitle {
-        font-size: clamp(1.25rem, 5vw, 1.75rem);
+        font-size: clamp(1.5rem, 6vw, 2rem);
         text-align: center;
     }
 }
@@ -224,23 +233,33 @@ body::after {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: clamp(1rem, 4vw, 2rem);
+    font-size: clamp(1.25rem, 5vw, 2.5rem);
+    margin-bottom: clamp(1rem, 2vh, 1.5rem);
+    padding-bottom: clamp(0.5rem, 1vh, 1rem);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    gap: clamp(2rem, 10vw, 6rem);
 }
 
-/* Mobile portrait: smaller rounds display */
+/* Mobile portrait: larger rounds display */
 @media (max-width: 480px) and (orientation: portrait) {
     .roundsDisplay {
-        font-size: clamp(1.25rem, 6vw, 1.75rem);
-        justify-content: center;
+        font-size: clamp(1.5rem, 6vw, 2rem);
+        justify-content: space-around;
+        margin-bottom: clamp(1.5rem, 3vh, 2rem);
+        padding-bottom: clamp(0.75rem, 1.5vh, 1.5rem);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+        gap: clamp(3rem, 15vw, 8rem);
     }
 }
 
 /* Timer display adjusts with viewport */
 .timerDisplay {
     width: 100%;
-    font-size: clamp(2rem, 25vw, 12rem); /* Responsive font size */
+    font-size: clamp(3rem, 25vw, 12rem); /* Responsive font size */
     text-align: center;
     font-variant-numeric: tabular-nums; /* Fixed-width digits prevent layout shift */
+    margin-top: clamp(0.5rem, 1vh, 1rem);
+    margin-bottom: clamp(0.5rem, 1vh, 1rem);
     white-space: nowrap; /* Prevent wrapping */
     overflow: visible; /* Allow overflow rather than wrap */
     display: flex;
@@ -249,28 +268,33 @@ body::after {
     flex-wrap: nowrap;
 }
 
-/* Mobile portrait: smaller timer that fits on one line */
+/* Mobile portrait: larger timer to fill vertical space */
 @media (max-width: 480px) and (orientation: portrait) {
     .timerDisplay {
-        font-size: clamp(2.5rem, 16vw, 5rem);
+        font-size: clamp(3rem, 22vw, 7rem);
         letter-spacing: -0.03em; /* Tighter spacing on mobile */
+        margin-top: clamp(1rem, 2vh, 1.5rem);
+        margin-bottom: clamp(1rem, 2vh, 1.5rem);
     }
 }
 
-/* Mobile landscape: use more horizontal space */
-@media (max-width: 932px) and (orientation: landscape) {
+/* Landscape: use more horizontal space */
+@media (orientation: landscape) {
     .timerDisplay {
-        font-size: clamp(2.5rem, 10vw, 6rem);
+        font-size: clamp(5rem, 24vh, 16rem);
         letter-spacing: -0.02em;
+        margin-top: clamp(0.5rem, 1vh, 1rem);
+        margin-bottom: clamp(0.5rem, 1vh, 1rem);
     }
     
     .mainTitle {
-        font-size: clamp(1rem, 2.5vw, 1.5rem);
+        font-size: clamp(1.25rem, 3vh, 2rem);
         text-align: center;
     }
     
     .roundsDisplay {
-        font-size: clamp(1rem, 3vw, 1.5rem);
+        font-size: clamp(1.25rem, 3vh, 2rem);
+        margin-bottom: clamp(0.5rem, 1.5vh, 1rem);
     }
 }
 
@@ -394,27 +418,31 @@ body {
 /* Mobile: smaller buttons that fit better */
 @media (max-width: 480px) {
     #buttonDisplay button {
-        flex: 1 1 45%;
-        min-width: 80px;
-        max-width: 140px;
-        font-size: clamp(0.75rem, 3.5vw, 1rem);
-        padding: 8px 12px;
+        flex: 0 1 auto;
+        min-width: 65px;
+        max-width: none;
+        font-size: clamp(0.7rem, 3vw, 0.95rem);
+        padding: 7px 11px;
         margin: 2px;
+        white-space: nowrap;
     }
 }
 
 /* Landscape: compact buttons in a single row */
-@media (max-width: 932px) and (orientation: landscape) {
+@media (orientation: landscape) {
     #buttonDisplay {
-        gap: 8px;
+        gap: 6px;
+        margin-top: 0.5rem;
+        flex-wrap: nowrap;
     }
     
     #buttonDisplay button {
         flex: 0 1 auto;
         min-width: auto;
-        font-size: clamp(0.8rem, 2vw, 1rem);
-        padding: 6px 14px;
+        font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+        padding: 5px 11px;
         margin: 0;
+        white-space: nowrap;
     }
 }
 

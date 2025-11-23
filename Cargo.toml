@@ -17,3 +17,15 @@ log = { version = "0.4.28", features = ["release_max_level_info"] }
 wasm-logger = "0.2.0"
 yew = { version="0.21.0", features=["csr"] }
 js-sys = "0.3.82"
+
+[profile.release]
+# Optimize for size
+opt-level = 'z'     # Optimize for size
+lto = true          # Enable Link Time Optimization
+codegen-units = 1   # Better optimization, slower compile
+panic = 'abort'     # Remove panic unwinding code
+strip = true        # Strip symbols from binary
+
+[profile.release.package."*"]
+opt-level = 'z'
+strip = true

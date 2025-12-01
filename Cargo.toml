@@ -16,7 +16,7 @@ gloo-timers = "0.3.0"
 log = { version = "0.4.28", features = ["release_max_level_info"] }
 wasm-logger = "0.2.0"
 yew = { version="0.21.0", features=["csr"] }
-js-sys = "0.3.82"
+js-sys = "0.3.83"
 
 [profile.release]
 # Optimize for size

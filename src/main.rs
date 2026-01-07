@@ -141,6 +141,30 @@ impl App {
         self.cancel();
     }
 
+    fn adjust_time_by_seconds(&mut self, delta_seconds: i64) {
+        let round_total_seconds = self.round_time.total_seconds() as i64;
+        let new_round_seconds = (round_total_seconds + delta_seconds).max(0);
+        self.round_time.minutes = (new_round_seconds / 60) as usize;
+        self.round_time.seconds = (new_round_seconds % 60) as usize;
+        self.round_time.tenths = 0;
+
+        let current_total_tenths = (self.timer.current_time.total_seconds() as i64) * 10
+            + self.timer.current_time.tenths as i64;
+        let mut new_current_tenths = current_total_tenths + delta_seconds * 10;
+        if new_current_tenths < 0 {
+            new_current_tenths = 0;
+        }
+        let max_tenths = new_round_seconds * 10;
+        if new_current_tenths > max_tenths {
+            new_current_tenths = max_tenths;
+        }
+
+        let new_current_seconds = new_current_tenths / 10;
+        self.timer.current_time.minutes = (new_current_seconds / 60) as usize;
+        self.timer.current_time.seconds = (new_current_seconds % 60) as usize;
+        self.timer.current_time.tenths = (new_current_tenths % 10) as usize;
+    }
+
     fn max_seconds(&self) -> usize {
         if self.round_time.minutes > 0 {
             60
@@ -247,30 +271,25 @@ impl Component for App {
             }
             Msg::IncrementSecond => {
                 info!("incrementing seconds");
-                self.round_time.increment_seconds();
-                self.timer.current_time = self.round_time;
+                self.adjust_time_by_seconds(1);
                 self.clear_blink_state();
                 true
             }
             Msg::DecrementSecond => {
                 info!("decrementing seconds");
-                let max_seconds = self.max_seconds();
-                self.round_time.decrement_seconds(max_seconds);
-                self.timer.current_time = self.round_time;
+                self.adjust_time_by_seconds(-1);
                 self.clear_blink_state();
                 true
             }
             Msg::IncrementQuarter => {
                 info!("incrementing 15");
-                self.round_time.increment_quarter();
-                self.timer.current_time = self.round_time;
+                self.adjust_time_by_seconds(15);
                 self.clear_blink_state();
                 true
             }
             Msg::DecrementQuarter => {
                 info!("decrementing 15");
-                self.round_time.decrement_quarter();
-                self.timer.current_time = self.round_time;
+                self.adjust_time_by_seconds(-15);
                 self.clear_blink_state();
                 true
             }
@@ -429,6 +448,64 @@ mod tests {
             countdown_timer: None,
         };
         assert_eq!(app.max_seconds(), 1);
+    }
+
+    #[test]
+    fn test_adjust_time_by_seconds_decrement_continuous() {
+        let mut app = App {
+            round_time: Time {
+                seconds: 0,
+                minutes: 1,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 50,
+                    minutes: 0,
+                    tenths: 0,
+                },
+                rounds: 1,
+                current_round: 1,
+                running: true,
+            },
+            blink_state: BlinkState::None,
+            countdown_timer: None,
+        };
+        app.adjust_time_by_seconds(-15);
+        assert_eq!(app.round_time.minutes, 0);
+        assert_eq!(app.round_time.seconds, 45);
+        assert_eq!(app.timer.current_time.minutes, 0);
+        assert_eq!(app.timer.current_time.seconds, 35);
+        assert_eq!(app.timer.current_time.tenths, 0);
+    }
+
+    #[test]
+    fn test_adjust_time_by_seconds_increment_continuous() {
+        let mut app = App {
+            round_time: Time {
+                seconds: 0,
+                minutes: 1,
+                tenths: 0,
+            },
+            timer: Timer {
+                current_time: Time {
+                    seconds: 50,
+                    minutes: 0,
+                    tenths: 7,
+                },
+                rounds: 1,
+                current_round: 1,
+                running: true,
+            },
+            blink_state: BlinkState::None,
+            countdown_timer: None,
+        };
+        app.adjust_time_by_seconds(15);
+        assert_eq!(app.round_time.minutes, 1);
+        assert_eq!(app.round_time.seconds, 15);
+        assert_eq!(app.timer.current_time.minutes, 1);
+        assert_eq!(app.timer.current_time.seconds, 5);
+        assert_eq!(app.timer.current_time.tenths, 7);
     }
 
     #[test]

@@ -69,7 +69,7 @@ body::before {
         radial-gradient(ellipse 1200px 180px at 80% 20%, rgba(255, 255, 255, 0.53) 0%, rgba(255, 255, 255, 0.22) 40%, transparent 70%),
         radial-gradient(ellipse 1600px 220px at 40% 70%, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0.32) 40%, transparent 70%);
     animation: clouds-drift-1 30s ease-in-out infinite;
-    filter: blur(30px);
+    filter: blur(22px);
 }
 
 body::after {
@@ -78,7 +78,22 @@ body::after {
         radial-gradient(ellipse 1300px 210px at 30% 80%, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.3) 40%, transparent 70%),
         radial-gradient(ellipse 1800px 240px at 90% 70%, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.21) 40%, transparent 70%);
     animation: clouds-drift-2 40s ease-in-out infinite reverse;
-    filter: blur(35px);
+    filter: blur(26px);
+}
+
+@media (max-width: 768px) {
+    body {
+        animation: none;
+        background-size: 100% 100%;
+    }
+
+    body::before,
+    body::after {
+        animation: none;
+        filter: blur(18px);
+        mask-image: none;
+        -webkit-mask-image: none;
+    }
 }
 
 @keyframes clouds-drift-1 {
@@ -122,8 +137,8 @@ body::after {
     min-height: min(600px, 75vh);
     padding: clamp(16px, 3vmin, 40px);
     background: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(30px) saturate(180%);
-    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
     border-radius: clamp(12px, 2vmin, 24px);
     border: 1px solid rgba(255, 255, 255, 0.25);
     box-shadow: 
@@ -180,6 +195,8 @@ body::after {
         min-height: min(550px, 70vh);
         padding: clamp(12px, 2.5vmin, 20px);
         max-width: 100%;
+        backdrop-filter: blur(14px) saturate(140%);
+        -webkit-backdrop-filter: blur(14px) saturate(140%);
     }
 }
 
@@ -301,7 +318,6 @@ body::after {
 /* Individual digit styling */
 .digit {
     display: inline-block;
-    will-change: transform;
 }
 
 /* Separator styling (colon and period) */
@@ -312,6 +328,7 @@ body::after {
 
 /* Continuous subtle pulse animation for tenths digit */
 .digit-tenths {
+    will-change: transform, opacity;
     animation: tenths-pulse 0.25s ease-in-out infinite;
 }
 
@@ -340,7 +357,6 @@ body {
 .timerDisplay {
     text-shadow: 0 0 20px rgba(255, 255, 255, 0.3),
                  0 0 40px rgba(255, 255, 255, 0.2);
-    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
 }
 
 /* Pulse the entire timer display slightly - only when idle */
@@ -378,8 +394,8 @@ body {
     
     /* Enhanced liquid glass effect for buttons */
     background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 12px;
     padding: 10px 16px;
@@ -425,6 +441,8 @@ body {
         padding: 7px 11px;
         margin: 2px;
         white-space: nowrap;
+        backdrop-filter: blur(8px) saturate(140%);
+        -webkit-backdrop-filter: blur(8px) saturate(140%);
     }
 }
 

@@ -288,6 +288,11 @@ impl Component for App {
         let on_subtract_second = ctx.link().callback(|_| Msg::DecrementSecond);
         let on_add_quarter = ctx.link().callback(|_| Msg::IncrementQuarter);
         let on_subtract_quarter = ctx.link().callback(|_| Msg::DecrementQuarter);
+        let start_label = if !state.running && state.current_time != self.round_time {
+            "Start ↻"
+        } else {
+            "Start ▶"
+        };
 
         html! {
             <html lang="en">
@@ -327,8 +332,8 @@ impl Component for App {
                     <span class="digit digit-tenths">{ state.current_time.tenths }</span>
                 </div>
                 <div id="buttonDisplay">
-                    <button aria-label="Start" onclick={ start } id="startButton">{ "Start" }</button>
-                    <button aria-label="Start" onclick={ stop } id="stopButton">{ "Pause" }</button>
+                    <button aria-label={start_label} onclick={ start } id="startButton">{ start_label }</button>
+                    <button aria-label="Pause" onclick={ stop } id="stopButton">{ "Pause" }</button>
                     <button aria-label="Decrement Round" onclick={ on_subtract_round } id="decrementRoundButton">{ "-Rnd" }</button>
                     <button aria-label="Increment Round" onclick={ on_add_round } id="incrementRoundButton">{ "+Rnd" }</button>
                     <button aria-label="Decrement 15" onclick={ on_subtract_quarter } id="decrementQuarterButton">{ "-15" }</button>

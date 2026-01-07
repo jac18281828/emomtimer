@@ -130,10 +130,11 @@ pub mod emomtimer {
         }
 
         pub fn decrement_rounds(&mut self) {
-            if self.rounds == 1 {
-                self.rounds = 1;
-            } else {
+            if self.rounds > 1 {
                 self.rounds -= 1;
+            }
+            if self.current_round > self.rounds {
+                self.current_round = self.rounds;
             }
         }
     }
@@ -203,6 +204,23 @@ pub mod emomtimer {
             timer.rounds = 1;
             timer.decrement_rounds();
             assert_eq!(timer.rounds, 1);
+        }
+
+        #[test]
+        fn test_decrement_rounds_clamps_current_round() {
+            let mut timer = Timer {
+                current_time: Time {
+                    seconds: 0,
+                    minutes: 1,
+                    tenths: 0,
+                },
+                rounds: 4,
+                current_round: 4,
+                running: false,
+            };
+            timer.decrement_rounds();
+            assert_eq!(timer.rounds, 3);
+            assert_eq!(timer.current_round, 3);
         }
 
         #[test]

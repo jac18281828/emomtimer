@@ -300,13 +300,7 @@ impl Component for App {
                 <meta name="theme-color" content="#667eea" />
                 <title>{ "EMOM Timer" }</title>
             </head>
-            <body style={
-                match self.blink_state {
-                    BlinkState::Red => "color:red",
-                    BlinkState::Green => "color:green",
-                    BlinkState::None => "color:black",
-                }
-            } >
+            <body>
                 <div id="background">
                     <div class="mainTitle">
                         <h3>{ "EMOM" }</h3>
@@ -315,7 +309,17 @@ impl Component for App {
                     <span>{ format!("{}/{}", state.current_round, state.rounds) }</span>
                     <span class="roundTime">{ format!("{}:{:02}", self.round_time.minutes, self.round_time.seconds) }</span>
                 </div>
-                <div class={classes!("timerDisplay", (!state.running).then_some("timer-idle"))} id="timerDisplay">
+                <div
+                    class={classes!("timerDisplay", (!state.running).then_some("timer-idle"))}
+                    id="timerDisplay"
+                    style={
+                        match self.blink_state {
+                            BlinkState::Red => "color:red",
+                            BlinkState::Green => "color:green",
+                            BlinkState::None => "color:black",
+                        }
+                    }
+                >
                     <span class="digit">{ state.current_time.minutes }</span>
                     <span class="separator">{ ":" }</span>
                     <span class="digit">{ format!("{:02}", state.current_time.seconds) }</span>

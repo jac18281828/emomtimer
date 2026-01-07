@@ -143,8 +143,7 @@ body::after {
     border: 1px solid rgba(255, 255, 255, 0.25);
     box-shadow: 
         0 8px 32px 0 rgba(31, 38, 135, 0.37),
-        inset 0 0 20px rgba(255, 255, 255, 0.1),
-        inset 0 0 60px rgba(144, 238, 144, 0.25);
+        inset 0 0 12px rgba(255, 255, 255, 0.08);
     position: relative;
     z-index: 1;
     overflow: hidden;
@@ -359,6 +358,12 @@ body {
                  0 0 40px rgba(255, 255, 255, 0.2);
 }
 
+@media (max-width: 768px) {
+    .timerDisplay {
+        text-shadow: 0 0 14px rgba(255, 255, 255, 0.25);
+    }
+}
+
 /* Pulse the entire timer display slightly - only when idle */
 @keyframes timer-breathe {
     0%, 100% {
@@ -391,19 +396,27 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     font-weight: 400;
     letter-spacing: -0.01em;
+    color: #283f8a;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.35);
     
     /* Enhanced liquid glass effect for buttons */
-    background: rgba(255, 255, 255, 0.15);
+    background: linear-gradient(
+        135deg,
+        rgba(140, 200, 255, 0.28) 0%,
+        rgba(90, 125, 235, 0.28) 45%,
+        rgba(70, 45, 160, 0.3) 100%
+    );
     backdrop-filter: blur(12px) saturate(160%);
     -webkit-backdrop-filter: blur(12px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(130, 175, 255, 0.35);
     border-radius: 12px;
     padding: 10px 16px;
     box-shadow: 
-        0 8px 24px 0 rgba(31, 38, 135, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.05);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        0 8px 24px 0 rgba(36, 54, 140, 0.25);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        background 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     position: relative;
     overflow: hidden;
@@ -441,8 +454,8 @@ body {
         padding: 7px 11px;
         margin: 2px;
         white-space: nowrap;
-        backdrop-filter: blur(8px) saturate(140%);
-        -webkit-backdrop-filter: blur(8px) saturate(140%);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
     }
 }
 
@@ -465,20 +478,26 @@ body {
 }
 
 #buttonDisplay button:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: linear-gradient(
+        135deg,
+        rgba(150, 210, 255, 0.35) 0%,
+        rgba(100, 135, 245, 0.35) 45%,
+        rgba(80, 55, 175, 0.38) 100%
+    );
     transform: translateY(-2px);
     box-shadow: 
-        0 12px 32px 0 rgba(31, 38, 135, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.4),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.1),
-        inset 0 0 30px rgba(144, 238, 144, 0.2);
-    border-color: rgba(255, 255, 255, 0.5);
+        0 12px 32px 0 rgba(36, 54, 140, 0.3);
+    border-color: rgba(160, 200, 255, 0.55);
 }
 
 #buttonDisplay button:active {
     transform: translateY(0);
-    background: rgba(255, 255, 255, 0.1);
+    background: linear-gradient(
+        135deg,
+        rgba(120, 180, 245, 0.25) 0%,
+        rgba(85, 115, 220, 0.25) 45%,
+        rgba(65, 40, 150, 0.28) 100%
+    );
     box-shadow: 
-        0 4px 12px 0 rgba(31, 38, 135, 0.15),
-        inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        0 4px 12px 0 rgba(36, 54, 140, 0.2);
 }

@@ -1,3 +1,8 @@
+# 1.1.6 (2026-01-06)
+
+* performance improvement
+* bug fix
+
 # 1.1.1 (2025-11-22)
 
 * liquid glass display

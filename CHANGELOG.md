@@ -1,3 +1,7 @@
+# 1.1.7 (2026-01-07)
+
+* bug fix timer after resume
+
 # 1.1.6 (2026-01-06)
 
 * performance improvement

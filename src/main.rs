@@ -30,22 +30,25 @@ impl App {
             return;
         }
 
-        if self.timer.current_round >= self.timer.rounds {
-            self.timer.current_round = 1;
-        }
+        let is_resume = self.timer.current_time != self.round_time;
+        if !is_resume {
+            if self.timer.current_round >= self.timer.rounds {
+                self.timer.current_round = 1;
+            }
 
-        // Adjust display to one tick before configured time when starting
-        // This ensures we count from 59.9 -> 0.0 for a 60 second timer
-        self.timer.current_time = self.round_time;
-        if self.timer.current_time.tenths > 0 {
-            self.timer.current_time.tenths -= 1;
-        } else if self.timer.current_time.seconds > 0 {
-            self.timer.current_time.seconds -= 1;
-            self.timer.current_time.tenths = 9;
-        } else if self.timer.current_time.minutes > 0 {
-            self.timer.current_time.minutes -= 1;
-            self.timer.current_time.seconds = 59;
-            self.timer.current_time.tenths = 9;
+            // Adjust display to one tick before configured time when starting
+            // This ensures we count from 59.9 -> 0.0 for a 60 second timer
+            self.timer.current_time = self.round_time;
+            if self.timer.current_time.tenths > 0 {
+                self.timer.current_time.tenths -= 1;
+            } else if self.timer.current_time.seconds > 0 {
+                self.timer.current_time.seconds -= 1;
+                self.timer.current_time.tenths = 9;
+            } else if self.timer.current_time.minutes > 0 {
+                self.timer.current_time.minutes -= 1;
+                self.timer.current_time.seconds = 59;
+                self.timer.current_time.tenths = 9;
+            }
         }
 
         self.timer.running = true;

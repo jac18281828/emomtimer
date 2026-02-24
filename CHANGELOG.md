@@ -1,3 +1,7 @@
+# 1.1.8 (2026-02-23)
+
+* deploy to cloudfront
+
 # 1.1.7 (2026-01-07)
 
 * bug fix timer after resume

@@ -1,4 +1,4 @@
-name: Build and Sync to S3
+name: Build and Deploy Static Site
 on:
   push:
     tags:
@@ -11,11 +11,13 @@ permissions:
   id-token: write
 # Allow one concurrent deployment
 concurrency:
-  group: 'sync-to-s3-${{ github.ref }}'
+  group: 'deploy-static-site-${{ github.ref }}'
   cancel-in-progress: true
 env:
   S3_BUCKET_NAME: 'emom-timer-us-east-2-504242000181'
   AWS_REGION: 'us-east-2'
+  SITE_URL: 'https://emomtimer.2ad.com'
+  CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -55,10 +57,22 @@ jobs:
           cargo test
       - name: Build Artifact
         run: |
-          trunk build --release --public-url http://${{ env.S3_BUCKET_NAME }}.s3-website.${{ env.AWS_REGION }}.amazonaws.com
+          trunk build --release --public-url ${{ env.SITE_URL }}
       - name: Sync S3 Bucket
         run: |
           aws s3 sync ./dist s3://${S3_BUCKET_NAME} --delete --region ${{ env.AWS_REGION }}
+      - name: Set HTML no-cache headers
+        run: |
+          aws s3 cp ./dist/index.html s3://${S3_BUCKET_NAME}/index.html \
+            --region ${{ env.AWS_REGION }} \
+            --cache-control "no-cache, no-store, must-revalidate" \
+            --content-type "text/html; charset=utf-8"
+      - name: Invalidate CloudFront cache
+        if: ${{ env.CLOUDFRONT_DISTRIBUTION_ID != '' }}
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
       - name: GitHub Release
         uses: softprops/action-gh-release@v2
         with:

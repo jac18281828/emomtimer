@@ -420,6 +420,10 @@ body {
     cursor: pointer;
     position: relative;
     overflow: hidden;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 /* Mottled glass texture for buttons */

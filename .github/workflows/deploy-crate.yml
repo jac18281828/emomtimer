@@ -2,7 +2,7 @@ name: Deploy to crates.io
 on:
   push:
     tags:
-      - '*'
+      - '[0-9]*.[0-9]*.[0-9]*'
 # Add explicit permissions
 permissions:
   contents: write

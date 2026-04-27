@@ -1,3 +1,7 @@
+# 1.1.9 (2026-04-27)
+
+* fix double-tap zoom on iPad button taps
+
 # 1.1.8 (2026-02-23)
 
 * deploy to cloudfront

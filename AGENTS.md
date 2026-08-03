@@ -3,15 +3,11 @@
 These guidelines apply to all AI-assisted code changes in this repository.
 
 ## Workflow
-1. Read the full contents of any file you plan to change, plus directly related modules.
-2. Summarize current behavior and invariants before proposing edits.
-3. Propose a minimal patch plan (files + rationale) before modifying code.
-4. Scope actions to the approval tier:
-   1. **Free** — reads, searches, web docs, `cargo check`/`fmt`/`clippy`/`test`, `trunk build`, local runs.
-   2. **Task-approved** (covered by the user's initial request) — edits under `src/`, `style.css`, `index.html`, gate fixes, iteration within the agreed plan.
-   3. **Ask each time** — `Cargo.toml` deps, cross-module or public-API refactors, expansive edits, file deletions, CI or release changes.
-   4. **Always ask** — `git commit`, `git push`, PRs, tags, force ops, anything visible outside the local repo.
-5. Affirm all `Completion Gates` are met.
+1. Summarize current behavior and invariants before proposing edits.
+2. **Ask each time** — `Cargo.toml` deps, cross-module or public-API refactors, file deletions,
+   CI or release changes.
+3. **Always ask** — merging to `main`, opening a PR, tags, force ops, anything that touches
+   shared state or `main`.
 
 ## Rust Style & Design
 - Correctness first; then idiomatic, reviewable Rust.
@@ -35,7 +31,6 @@ These guidelines apply to all AI-assisted code changes in this repository.
 
 ## Dependencies and Imports
 - Prefer the standard library.
-- Add external crates only with user approval.
 - Declare imports at the top of each module; keep them explicit and organized so dependencies are clear.
 
 ## Tests

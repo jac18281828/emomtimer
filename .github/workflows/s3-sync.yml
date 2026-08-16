@@ -14,8 +14,8 @@ concurrency:
   group: 'deploy-static-site-${{ github.ref }}'
   cancel-in-progress: true
 env:
-  S3_BUCKET_NAME: 'emom-timer-us-east-2-504242000181'
-  AWS_REGION: 'us-east-2'
+  S3_BUCKET_NAME: 'emomtimer-us-east-1-504242000181'
+  AWS_REGION: 'us-east-1'
   SITE_URL: 'https://emomtimer.2ad.com'
   CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
 jobs:

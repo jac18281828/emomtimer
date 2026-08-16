@@ -230,6 +230,46 @@ emomtimer/
 └── README.md               # This file
 ```
 
+## Infrastructure
+
+`emomtimer.2ad.com` is defined as an AWS CDK app under `cdk/`, deployed as the stack
+`StackEmomTimer2adCom` in `us-east-1` — the region CloudFront requires for its ACM
+certificate.
+
+The stack owns:
+
+- the origin bucket `emomtimer-us-east-1-504242000181`
+- the ACM certificate for `emomtimer.2ad.com`, DNS-validated
+- the CloudFront distribution, with Origin Access Control
+- the bucket policy granting that distribution read access and denying every other reader
+- the `A` and `AAAA` alias records for the subdomain
+
+The stack does not own the `2ad.com` hosted zone. The zone is created and managed
+outside CloudFormation, shared by every site under the domain, and imported read-only
+here — no deploy recreates it and no destroy removes it. Nor does the stack publish
+site content: `.github/workflows/s3-sync.yml` builds with `trunk` and syncs `dist/` to
+the origin bucket on every tagged release.
+
+```bash
+bun install
+bun run test                              # CDK assertions
+bun run cdk:synth StackEmomTimer2adCom    # template only, no credentials needed
+bun run cdk:deploy StackEmomTimer2adCom
+```
+
+The stack's `DistributionId` output is the value for the `CLOUDFRONT_DISTRIBUTION_ID`
+repository secret, which `s3-sync.yml` reads to invalidate the cache after a sync.
+
+The bucket is created with `removalPolicy: DESTROY` and `autoDeleteObjects`, so
+`cdk destroy` deletes the site's content along with the stack. That is deliberate: a
+retained bucket would block the next deploy on the globally unique name, and `trunk
+build` regenerates the content from source.
+
+This stack cannot deploy while the `2ad.com` repository still defines its own
+`StackEmomTimer2adCom`, because CloudFront refuses a second distribution claiming an
+alternate domain name already in use. The one-time cutover order is: destroy the
+`2ad.com` stack, deploy from here, then land the `2ad.com` removal last.
+
 ## Contributing
 
 Contributions are welcome! Please:

@@ -1,3 +1,8 @@
+# 1.1.10 (2026-08-15)
+
+* own the site infrastructure in a CDK app under `cdk/`
+* origin bucket moves to `emomtimer-us-east-1-504242000181` in `us-east-1`
+
 # 1.1.9 (2026-04-27)
 
 * fix double-tap zoom on iPad button taps

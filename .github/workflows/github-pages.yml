@@ -40,7 +40,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
       - name: Install trunk and wasm
-        run: "rustup toolchain install stable \nrustup component add rustfmt\nrustup component add clippy\ncargo install trunk\nrustup target add wasm32-unknown-unknown\n"
+        run: "rustup toolchain install stable \nrustup component add rustfmt\nrustup component add clippy\ncargo install trunk --locked\nrustup target add wasm32-unknown-unknown\n"
       - name: Rust Build and Check
         run: |
           cargo fmt --check

@@ -1,3 +1,7 @@
+# 1.1.11 (2026-09-19)
+
+* missing assets return a real 404 instead of `index.html` with 200
+
 # 1.1.10 (2026-08-15)
 
 * own the site infrastructure in a CDK app under `cdk/`

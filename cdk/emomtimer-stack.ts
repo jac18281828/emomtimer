@@ -65,20 +65,6 @@ export class EmomTimerStack extends cdk.Stack {
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
         compress: true,
       },
-      errorResponses: [
-        {
-          httpStatus: 403,
-          responseHttpStatus: 200,
-          responsePagePath: '/index.html',
-          ttl: cdk.Duration.minutes(5),
-        },
-        {
-          httpStatus: 404,
-          responseHttpStatus: 200,
-          responsePagePath: '/index.html',
-          ttl: cdk.Duration.minutes(5),
-        },
-      ],
     });
 
     const distributionArn = `arn:${cdk.Aws.PARTITION}:cloudfront::${cdk.Aws.ACCOUNT_ID}:distribution/${this.distribution.distributionId}`;
@@ -94,6 +80,24 @@ export class EmomTimerStack extends cdk.Stack {
         principals: [new iam.ServicePrincipal('cloudfront.amazonaws.com')],
         actions: ['s3:GetObject'],
         resources: [`${this.bucket.bucketArn}/*`],
+        conditions: {
+          StringEquals: {
+            'AWS:SourceArn': distributionArn,
+            'AWS:SourceAccount': cdk.Aws.ACCOUNT_ID,
+          },
+        },
+      }),
+    );
+
+    // Without ListBucket, S3 reports a missing key as 403 to hide whether it
+    // exists; granting it lets CloudFront pass a true 404 to the viewer.
+    this.bucket.addToResourcePolicy(
+      new iam.PolicyStatement({
+        sid: 'AllowCloudFrontServicePrincipalList',
+        effect: iam.Effect.ALLOW,
+        principals: [new iam.ServicePrincipal('cloudfront.amazonaws.com')],
+        actions: ['s3:ListBucket'],
+        resources: [this.bucket.bucketArn],
         conditions: {
           StringEquals: {
             'AWS:SourceArn': distributionArn,

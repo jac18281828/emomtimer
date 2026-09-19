@@ -120,6 +120,11 @@ describe('EmomTimerStack', () => {
             Action: 's3:GetObject',
           }),
           Match.objectLike({
+            Sid: 'AllowCloudFrontServicePrincipalList',
+            Effect: 'Allow',
+            Action: 's3:ListBucket',
+          }),
+          Match.objectLike({
             Sid: 'DenyDirectS3ReadForObjects',
             Effect: 'Deny',
             Action: 's3:GetObject',
@@ -171,23 +176,12 @@ describe('EmomTimerStack', () => {
     template.resourceCountIs('AWS::Route53::HostedZone', 0);
   });
 
-  it('configures SPA behavior for the CloudFront distribution', () => {
+  it('serves index.html at the root and passes missing keys through as errors', () => {
     template.hasResourceProperties('AWS::CloudFront::Distribution', {
       DistributionConfig: {
         Aliases: Match.arrayWith(['emomtimer.2ad.com']),
         DefaultRootObject: 'index.html',
-        CustomErrorResponses: Match.arrayWith([
-          Match.objectLike({
-            ErrorCode: 403,
-            ResponseCode: 200,
-            ResponsePagePath: '/index.html',
-          }),
-          Match.objectLike({
-            ErrorCode: 404,
-            ResponseCode: 200,
-            ResponsePagePath: '/index.html',
-          }),
-        ]),
+        CustomErrorResponses: Match.absent(),
       },
     });
   });

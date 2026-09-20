@@ -1,3 +1,7 @@
+# 1.1.13 (2026-09-20)
+
+* read the CloudFront distribution id from the stack outputs instead of a secret
+
 # 1.1.12 (2026-09-19)
 
 * deploy the CDK stack from CI on tag, before the site sync

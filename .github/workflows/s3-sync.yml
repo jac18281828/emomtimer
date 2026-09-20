@@ -30,6 +30,16 @@ jobs:
           audience: sts.amazonaws.com
           aws-region: ${{ env.AWS_REGION }}
           role-to-assume: arn:aws:iam::504242000181:role/GithubDeployCI
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Set up bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
@@ -68,6 +78,8 @@ jobs:
       - name: Build Artifact
         run: |
           trunk build --release --public-url ${{ env.SITE_URL }}
+      - name: Deploy infrastructure
+        run: bun run cdk:deploy StackEmomTimer2adCom --require-approval never --no-telemetry
       - name: Sync S3 Bucket
         run: |
           aws s3 sync ./dist s3://${S3_BUCKET_NAME} --delete --region ${{ env.AWS_REGION }}

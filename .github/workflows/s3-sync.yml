@@ -17,7 +17,6 @@ env:
   S3_BUCKET_NAME: 'emomtimer-us-east-1-504242000181'
   AWS_REGION: 'us-east-1'
   SITE_URL: 'https://emomtimer.2ad.com'
-  CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -79,7 +78,15 @@ jobs:
         run: |
           trunk build --release --public-url ${{ env.SITE_URL }}
       - name: Deploy infrastructure
-        run: bun run cdk:deploy StackEmomTimer2adCom --require-approval never --no-telemetry
+        run: bun run cdk:deploy StackEmomTimer2adCom --require-approval never --no-telemetry --outputs-file cdk-outputs.json
+      - name: Read distribution id
+        run: |
+          python3 - <<'PY' >> "$GITHUB_ENV"
+          import json
+          with open('cdk-outputs.json') as f:
+              outputs = json.load(f)
+          print(f"CLOUDFRONT_DISTRIBUTION_ID={outputs['StackEmomTimer2adCom']['DistributionId']}")
+          PY
       - name: Sync S3 Bucket
         run: |
           aws s3 sync ./dist s3://${S3_BUCKET_NAME} --delete --region ${{ env.AWS_REGION }}
@@ -90,7 +97,6 @@ jobs:
             --cache-control "no-cache, no-store, must-revalidate" \
             --content-type "text/html; charset=utf-8"
       - name: Invalidate CloudFront cache
-        if: ${{ env.CLOUDFRONT_DISTRIBUTION_ID != '' }}
         run: |
           aws cloudfront create-invalidation \
             --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \

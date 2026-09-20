@@ -1,3 +1,8 @@
+# 1.1.12 (2026-09-19)
+
+* deploy the CDK stack from CI on tag, before the site sync
+* fix the GitHub Pages build: install `trunk` with `--locked`
+
 # 1.1.11 (2026-09-19)
 
 * missing assets return a real 404 instead of `index.html` with 200
